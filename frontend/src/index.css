@@ -1,0 +1,776 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-display: 'Outfit', sans-serif;
+
+    /* Highly contrasted, crisp Light Mode operational palette */
+    --bg-primary: #fafafa;
+    --bg-card: #ffffff;
+    /* clean white boxes */
+    --bg-elevated: #f0fdf4;
+    --text-primary: #1f2937;
+    /* dark gray text for better readability */
+    --text-secondary: #374151;
+    /* medium gray secondary */
+    --text-muted: #6b7280;
+    /* lighter muted text */
+    --border-color: #e5e7eb;
+    --border-strong: #d1d5db;
+    --border-input: #d1d5db;
+    --accent-primary: #10b981;
+    --accent-primary-hover: #059669;
+    --accent-info: #2563eb;
+    --accent-warning: #d97706;
+    --accent-danger: #dc2626;
+    /* better red */
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    /* Override slate utility colors for Light Mode */
+    --u-bg-950: #fafafa;
+    /* light gray body bg */
+    --u-bg-900: #ffffff;
+    /* clean white boxes */
+    --u-bg-800: #f9fafb;
+    /* slightly elevated gray boxes */
+    --u-bg-700: #f3f4f6;
+    --u-border-800: #e5e7eb;
+    --u-border-700: #d1d5db;
+
+    /* Light Theme State Badges */
+    --badge-bg-pending: #fffbeb;
+    --badge-text-pending: #d97706;
+    --badge-border-pending: rgba(217, 119, 6, 0.22);
+
+    --badge-bg-assigned: #eff6ff;
+    --badge-text-assigned: #2563eb;
+    --badge-border-assigned: rgba(37, 99, 235, 0.2);
+
+    --badge-bg-completed: #ecfdf5;
+    --badge-text-completed: #059669;
+    --badge-border-completed: rgba(5, 150, 105, 0.22);
+
+    --badge-bg-cancelled: #fef2f2;
+    --badge-text-cancelled: #c20c0c;
+    /* bold red */
+    --badge-border-cancelled: rgba(194, 12, 12, 0.22);
+  }
+
+  .dark {
+    /* Highly contrasted, crisp Dark Mode operational palette */
+    --bg-primary: #000000;
+    /* pure black body bg */
+    --bg-card: #081d11;
+    /* green box background */
+    --bg-elevated: #0f301d;
+    --text-primary: #ffffff;
+    /* white text */
+    --text-secondary: #ccffd6;
+    /* light green text */
+    --text-muted: #9bcfa3;
+    /* light muted green text */
+    --border-color: rgba(34, 197, 94, 0.18);
+    --border-strong: rgba(34, 197, 94, 0.32);
+    --border-input: rgba(34, 197, 94, 0.28);
+    --accent-primary: #22c55e;
+    --accent-primary-hover: #16a34a;
+    --accent-info: #60a5fa;
+    --accent-warning: #fbbf24;
+    --accent-danger: #ef4444;
+    /* red */
+    --shadow-card: 0 20px 50px -30px rgba(0, 0, 0, 0.95);
+
+    --u-bg-950: #000000;
+    --u-bg-900: #081d11;
+    /* green boxes */
+    --u-bg-800: #0f301d;
+    --u-bg-700: #17482c;
+    --u-border-800: rgba(34, 197, 94, 0.18);
+    --u-border-700: rgba(34, 197, 94, 0.28);
+
+    /* Dark Theme State Badges */
+    --badge-bg-pending: rgba(251, 191, 36, 0.1);
+    --badge-text-pending: #fbbf24;
+    --badge-border-pending: rgba(251, 191, 36, 0.26);
+
+    --badge-bg-assigned: rgba(96, 165, 250, 0.1);
+    --badge-text-assigned: #60a5fa;
+    --badge-border-assigned: rgba(96, 165, 250, 0.26);
+
+    --badge-bg-completed: rgba(34, 197, 94, 0.1);
+    --badge-text-completed: #22c55e;
+    --badge-border-completed: rgba(34, 197, 94, 0.28);
+
+    --badge-bg-cancelled: rgba(239, 68, 68, 0.1);
+    --badge-text-cancelled: #ef4444;
+    --badge-border-cancelled: rgba(239, 68, 68, 0.26);
+  }
+}
+
+/* Base Body Application setup */
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Intercept Tailwind utility overrides for complete system elegance */
+.bg-slate-950 {
+  background-color: var(--u-bg-950) !important;
+}
+
+.bg-slate-900,
+.bg-slate-900\/40,
+.bg-slate-900\/50,
+.bg-slate-900\/60 {
+  background-color: var(--u-bg-900) !important;
+}
+
+.bg-slate-800,
+.bg-slate-800\/50 {
+  background-color: var(--u-bg-800) !important;
+}
+
+.border-slate-800 {
+  border-color: var(--u-border-800) !important;
+}
+
+.border-slate-850 {
+  border-color: var(--u-border-800) !important;
+}
+
+.border-slate-700 {
+  border-color: var(--u-border-700) !important;
+}
+
+/* Override text color utilities */
+.text-slate-100,
+.text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-300 {
+  color: var(--text-secondary) !important;
+}
+
+.text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+.text-slate-500 {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+/* Semantic color utilities mapped to the product palette */
+.text-emerald-400,
+.text-emerald-500 {
+  color: var(--accent-primary) !important;
+}
+
+.text-amber-400,
+.text-amber-500 {
+  color: var(--accent-warning) !important;
+}
+
+.text-red-400,
+.text-red-500 {
+  color: var(--accent-danger) !important;
+}
+
+.text-blue-400,
+.text-blue-500 {
+  color: var(--accent-info) !important;
+}
+
+/* Emerald Button Gradient and premium agricultural glows */
+.bg-emerald-600,
+.bg-emerald-700 {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 20px -10px rgba(16, 185, 129, 0.6) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.bg-emerald-600:hover,
+.bg-emerald-700:hover {
+  transform: translateY(-1.5px) !important;
+  filter: brightness(1.04);
+  box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.72) !important;
+}
+
+.bg-emerald-600:active,
+.bg-emerald-700:active {
+  transform: translateY(0.5px) scale(0.97) !important;
+}
+
+.bg-amber-600,
+.bg-amber-700 {
+  background: linear-gradient(135deg, #c06d0f, #963e03) !important;
+}
+
+.bg-red-600,
+.bg-red-700 {
+  background: linear-gradient(135deg, #a03a3a, #dc2626) !important;
+}
+
+/* Buttons with white text MUST stay white! */
+.bg-emerald-600,
+.bg-emerald-700,
+.bg-amber-600,
+.bg-amber-700,
+.bg-red-950\/40,
+.btn-premium-emerald,
+.bg-red-900\/40 {
+  color: #ffffff !important;
+}
+
+.bg-emerald-600 *,
+.bg-emerald-700 *,
+.bg-amber-600 *,
+.bg-amber-700 *,
+.btn-premium-emerald * {
+  color: #ffffff !important;
+}
+
+/* Light Mode safety: Prevent text-white from turning invisible on white cards or background */
+:root .text-white {
+  color: var(--text-primary) !important;
+}
+
+/* Restore white text for actual colored backgrounds, buttons, and alerts in Light Mode */
+:root button.text-white,
+:root a.text-white,
+:root button .text-white,
+:root .bg-emerald-600,
+:root .bg-emerald-600 *,
+:root .bg-emerald-700,
+:root .bg-emerald-700 *,
+:root .bg-amber-600,
+:root .bg-amber-600 *,
+:root .bg-amber-700,
+:root .bg-amber-700 *,
+:root .bg-red-600,
+:root .bg-red-600 *,
+:root .bg-red-700,
+:root .bg-red-700 *,
+:root .btn-premium-emerald,
+:root .btn-premium-emerald *,
+:root .btn-premium-amber,
+:root .btn-premium-amber *,
+:root .btn-glow-gold,
+:root .btn-glow-gold *,
+:root .offline-banner,
+:root .offline-banner *,
+:root .toast,
+:root .toast * {
+  color: #ffffff !important;
+}
+
+/* Premium Glass Cards with staggered scale animations on hover */
+.glass-panel {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated)) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--text-primary) !important;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-panel:hover {
+  transform: translateY(-3px) scale(1.005);
+  border-color: var(--border-strong) !important;
+  box-shadow: 0 20px 40px -25px rgba(16, 185, 129, 0.24), var(--shadow-card) !important;
+}
+
+/* Dynamic State Badges Overrides */
+.bg-amber-950 {
+  background-color: var(--badge-bg-pending) !important;
+  border: 1px solid var(--badge-border-pending) !important;
+}
+
+.text-amber-400 {
+  color: var(--badge-text-pending) !important;
+}
+
+.bg-blue-950 {
+  background-color: var(--badge-bg-assigned) !important;
+  border: 1px solid var(--badge-border-assigned) !important;
+}
+
+.text-blue-400 {
+  color: var(--badge-text-assigned) !important;
+}
+
+.bg-emerald-950 {
+  background-color: var(--badge-bg-completed) !important;
+  border: 1px solid var(--badge-border-completed) !important;
+}
+
+.text-emerald-400 {
+  color: var(--badge-text-completed) !important;
+}
+
+.bg-red-950 {
+  background-color: var(--badge-bg-cancelled) !important;
+  border: 1px solid var(--badge-border-cancelled) !important;
+}
+
+.text-red-400 {
+  color: var(--badge-text-cancelled) !important;
+}
+
+/* Sidebar Tab Hover Polishes with slide transition */
+.grid .space-y-2 button:not(.bg-emerald-950):hover,
+.space-y-2 button:not(.bg-emerald-950):hover,
+.flex button:hover {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+/* Inputs & Form controllers overrides */
+input,
+select,
+textarea {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-input) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  padding: 11px 15px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14) !important;
+  outline: none;
+}
+
+/* Active tabs styles */
+.nav-tab-active,
+.bg-emerald-950 {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.28) !important;
+  color: var(--accent-primary) !important;
+}
+
+.dark .nav-tab-active,
+.dark .bg-emerald-950 {
+  background: rgba(52, 211, 153, 0.14) !important;
+  border-color: rgba(52, 211, 153, 0.36) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* Interactive tables stylings */
+th {
+  background: var(--u-bg-800) !important;
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  text-transform: uppercase !important;
+  border-bottom: 2px solid var(--border-strong) !important;
+  padding: 14px 12px !important;
+  letter-spacing: 0.05em;
+}
+
+td {
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding: 14px 12px !important;
+}
+
+tr:hover td {
+  background: rgba(16, 185, 129, 0.04) !important;
+}
+
+/* Dark mode surface polish */
+.dark .glass-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .glass-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+/* Animated PWA Gold installation glow */
+.btn-glow-gold {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 26px -18px rgba(245, 158, 11, 0.7) !important;
+}
+
+.btn-glow-gold::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+  transform: scale(0);
+  transition: transform 0.5s ease-out;
+}
+
+.btn-glow-gold:hover::before {
+  transform: scale(1.2);
+}
+
+/* Webkit Scrollbars Custom Polishes */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(94, 121, 106, 0.32);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.42);
+}
+
+/* Quiet agricultural dot workspace texture */
+html,
+body {
+  background-color: #fafafa !important;
+  background-image: none !important;
+}
+
+html.dark,
+body.dark,
+.dark body,
+.dark html {
+  background-color: #000000 !important;
+  background-image: radial-gradient(rgba(34, 197, 94, 0.04) 1.5px, transparent 1.5px) !important;
+  background-size: 26px 26px !important;
+}
+
+/* ----------------------------------------------------
+   HIGH-FIDELITY CSS ANIMATIONS KEYFRAMES
+   ---------------------------------------------------- */
+
+/* Premium Notification Bell swinging animation */
+@keyframes swing {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  20% {
+    transform: rotate(14deg);
+  }
+
+  40% {
+    transform: rotate(-14deg);
+  }
+
+  60% {
+    transform: rotate(8deg);
+  }
+
+  80% {
+    transform: rotate(-8deg);
+  }
+}
+
+.animate-swing {
+  animation: swing 2s ease infinite;
+  transform-origin: top center;
+}
+
+/* Slide-in from right animation for the alert drawer */
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slide-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered mount animation for pages & dashboards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* General mount animation for cards with small delay increments */
+.glass-panel {
+  animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.glass-panel:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
+.glass-panel:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.glass-panel:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.glass-panel:nth-child(4) {
+  animation-delay: 0.16s;
+}
+
+.glass-panel:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+/* Scale-up pop for modals and toasts */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Button click tactile feedback fallback */
+button:active {
+  transform: scale(0.96) !important;
+}
+
+/* PWA Splash animation */
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+  }
+}
+
+.animate-bounce-slow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* Skeletal Shimmer Loaders for future placeholders */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--u-bg-800) 25%, var(--u-bg-700) 50%, var(--u-bg-800) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* ----------------------------------------------------
+   PREMIUM HIGH-CONTRAST LIGHT MODE UI ENHANCEMENTS
+   ---------------------------------------------------- */
+body:not(.dark) .bg-slate-800 {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+body:not(.dark) .bg-slate-800:hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+body:not(.dark) .bg-slate-800 * {
+  color: #1f2937 !important;
+}
+
+body:not(.dark) header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+body:not(.dark) .bg-slate-900\/40 {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #e5e7eb !important;
+}
+
+body:not(.dark) .bg-slate-900\/40 * {
+  color: #1f2937 !important;
+}
+
+body:not(.dark) .glass-panel:hover {
+  background-color: #f9fafb !important;
+  border-color: #d1d5db !important;
+}
+
+/* ----------------------------------------------------
+   PREMIUM HIGH-CONTRAST DARK MODE OVERRIDES
+   ---------------------------------------------------- */
+/* Red buttons in dark mode for primary actions */
+.dark .bg-emerald-600,
+.dark .bg-emerald-700 {
+  background: linear-gradient(135deg, #e11d48, #be123c) !important;
+  /* Premium Rose Red buttons */
+  box-shadow: 0 8px 20px -10px rgba(225, 29, 72, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.dark .bg-emerald-600:hover,
+.dark .bg-emerald-700:hover {
+  background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
+  box-shadow: 0 12px 24px -8px rgba(225, 29, 72, 0.72) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.dark .bg-emerald-600 *,
+.dark .bg-emerald-700 * {
+  color: #ffffff !important;
+}
+
+/* Active tab style inside dark mode is gold/amber or clear red */
+.dark .bg-emerald-950 {
+  background-color: rgba(225, 29, 72, 0.15) !important;
+  border: 1px solid rgba(225, 29, 72, 0.35) !important;
+  color: #ef4444 !important;
+}
+
+.dark .bg-emerald-950 * {
+  color: #ef4444 !important;
+}
+
+/* ----------------------------------------------------
+   PREMIUM HELPLINE CHAT LIGHT/DARK DECORATIVE SYSTEMS
+   ---------------------------------------------------- */
+.helpline-bubble-me {
+  background-color: #10b981 !important;
+  border: 1px solid #059669 !important;
+  color: #ffffff !important;
+}
+
+.helpline-bubble-me * {
+  color: #ffffff !important;
+}
+
+.helpline-bubble-peer {
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+.helpline-bubble-peer * {
+  color: #1f2937 !important;
+}
+
+.helpline-contact-btn-active {
+  background-color: #10b981 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+.helpline-contact-text-active {
+  color: #ffffff !important;
+}
+
+.helpline-contact-subtext-active {
+  color: #ecfdf5 !important;
+  opacity: 0.95;
+}
+
+/* Dark Mode Overrides for Helpline Chat */
+.dark .helpline-bubble-me {
+  background: linear-gradient(135deg, #e11d48, #be123c) !important;
+  /* Matches rose/red dark theme buttons */
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.dark .helpline-bubble-me * {
+  color: #ffffff !important;
+}
+
+.dark .helpline-bubble-peer {
+  background-color: #081d11 !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.dark .helpline-bubble-peer * {
+  color: #ffffff !important;
+}
+
+.dark .helpline-contact-btn-active {
+  background: linear-gradient(135deg, #e11d48, #be123c) !important;
+  /* Matches active rose theme */
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+.dark .helpline-contact-text-active {
+  color: #ffffff !important;
+}
+
+.dark .helpline-contact-subtext-active {
+  color: #fca5a5 !important;
+  opacity: 0.95;
+}
