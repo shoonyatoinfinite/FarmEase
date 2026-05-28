@@ -4,32 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db } = require('../database');
 const { JWT_SECRET, verifyToken } = require('../middleware/auth');
-const admin = require('firebase-admin');
-
 // Transient store for OTPs (for simulation)
 const otpStore = {}; // phone/email -> { otp, attempts, expires }
-
-// Initialize Firebase Admin SDK
-const firebaseProjectId = process.env.FIREBASE_PROJECT_ID;
-const firebaseClientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY;
-
-if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: firebaseProjectId,
-        clientEmail: firebaseClientEmail,
-        privateKey: firebasePrivateKey.replace(/\\n/g, '\n')
-      })
-    });
-    console.log("🚀 Firebase Admin SDK initialized successfully.");
-  } catch (err) {
-    console.error("❌ Firebase Admin SDK initialization error:", err);
-  }
-} else {
-  console.warn("⚠️ Firebase credentials missing. Running in Developer Simulation Mode (accepts base64 mock tokens).");
-}
 
 // Google Token verification helper supporting Developer Simulation
 async function verifyGoogleToken(idToken) {
@@ -58,18 +34,7 @@ async function verifyGoogleToken(idToken) {
     }
   }
 
-  // Real Firebase ID Token verification
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    return {
-      email: decodedToken.email,
-      name: decodedToken.name,
-      uid: decodedToken.uid
-    };
-  } catch (error) {
-    console.error("Firebase ID Token verification failed:", error.message);
-    throw new Error('Invalid Google ID Token.');
-  }
+  throw new Error('Google Authentication is disabled. Please use Simulation Mode.');
 }
 
 // POST /api/auth/register
