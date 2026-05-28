@@ -124,7 +124,7 @@ async function startServer() {
   }
 
   server.listen(PORT, () => {
-    console.log(`🚀 FarmEase Server running on http://localhost:${PORT}`);
+    console.log(`🚀 FarmEase Server running on port ${PORT}`);
   });
 }
 

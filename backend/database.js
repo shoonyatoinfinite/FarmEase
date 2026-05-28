@@ -56,36 +56,54 @@ const db = {
 async function initDB() {
   const { Client, Pool } = require('pg');
 
+  const dbUrl = process.env.DATABASE_URL;
   const pgUser = process.env.DB_USER || 'postgres';
   const pgPassword = process.env.DB_PASSWORD || 'postgres';
   const pgHost = process.env.DB_HOST || 'localhost';
   const pgPort = process.env.DB_PORT || 5432;
+  const pgDatabase = process.env.DB_NAME || 'farmease';
 
-  // Auto-create database if not exists (connecting to default 'postgres' database first)
-  const adminConnectionString = `postgres://${encodeURIComponent(pgUser)}:${encodeURIComponent(pgPassword)}@${pgHost}:${pgPort}/postgres`;
-  const client = new Client({ connectionString: adminConnectionString, connectionTimeoutMillis: 5000 });
-  try {
-    await client.connect();
-    const dbName = process.env.DB_NAME || 'farmease';
-    const checkDb = await client.query(`SELECT 1 FROM pg_database WHERE datname='${dbName}'`);
-    if (checkDb.rowCount === 0) {
-      await client.query(`CREATE DATABASE ${dbName}`);
-      console.log(`Database "${dbName}" created successfully.`);
+  // Determine if this is a local or remote connection to configure SSL automatically
+  const isLocal = dbUrl
+    ? (dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1'))
+    : (pgHost === 'localhost' || pgHost === '127.0.0.1');
+
+  // SSL is required for remote database providers like Supabase
+  const ssl = process.env.DB_SSL === 'true' || (!isLocal && process.env.DB_SSL !== 'false')
+    ? { rejectUnauthorized: false }
+    : false;
+
+  // Auto-create database if not exists (only for local connections where individual credentials are set)
+  if (!dbUrl && isLocal) {
+    const adminConnectionString = `postgres://${encodeURIComponent(pgUser)}:${encodeURIComponent(pgPassword)}@${pgHost}:${pgPort}/postgres`;
+    const client = new Client({ connectionString: adminConnectionString, connectionTimeoutMillis: 5000, ssl: ssl });
+    try {
+      await client.connect();
+      const checkDb = await client.query(`SELECT 1 FROM pg_database WHERE datname='${pgDatabase}'`);
+      if (checkDb.rowCount === 0) {
+        await client.query(`CREATE DATABASE ${pgDatabase}`);
+        console.log(`Database "${pgDatabase}" created successfully.`);
+      }
+      await client.end();
+    } catch (err) {
+      console.log('⚠️ Postgres database creation check skipped:', err.message);
     }
-    await client.end();
-  } catch (err) {
-    console.log('⚠️ Postgres database creation check skipped:', err.message);
   }
 
   console.log('Connecting to PostgreSQL database pool...');
-  dbInstance = new Pool({
-    host: pgHost,
-    port: pgPort,
-    user: pgUser,
-    password: pgPassword,
-    database: process.env.DB_NAME || 'farmease',
-    connectionTimeoutMillis: 5000
-  });
+  const poolConfig = dbUrl
+    ? { connectionString: dbUrl, connectionTimeoutMillis: 5000, ssl: ssl }
+    : {
+        host: pgHost,
+        port: pgPort,
+        user: pgUser,
+        password: pgPassword,
+        database: pgDatabase,
+        connectionTimeoutMillis: 5000,
+        ssl: ssl
+      };
+
+  dbInstance = new Pool(poolConfig);
 
   // Perform a dry run test query to verify connection
   await dbInstance.query('SELECT 1');
