@@ -3,9 +3,44 @@ const dns = require('dns');
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
+const dnsPromises = require('dns').promises;
+const { URL } = require('url');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
+async function resolveDbUrlToIPv4(dbUrl) {
+  if (!dbUrl) return dbUrl;
+  try {
+    const parsedUrl = new URL(dbUrl);
+    const hostname = parsedUrl.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      const addresses = await dnsPromises.resolve4(hostname);
+      if (addresses && addresses.length > 0) {
+        parsedUrl.hostname = addresses[0];
+        console.log(`Resolved database host ${hostname} to IPv4 ${addresses[0]}`);
+        return parsedUrl.toString();
+      }
+    }
+  } catch (err) {
+    console.warn("⚠️ Manual DNS resolution failed, using original URI:", err.message);
+  }
+  return dbUrl;
+}
+
+async function resolveHostToIPv4(host) {
+  if (!host || host === 'localhost' || host === '127.0.0.1') return host;
+  try {
+    const addresses = await dnsPromises.resolve4(host);
+    if (addresses && addresses.length > 0) {
+      console.log(`Resolved database host ${host} to IPv4 ${addresses[0]}`);
+      return addresses[0];
+    }
+  } catch (err) {
+    console.warn("⚠️ DNS resolution failed for host:", err.message);
+  }
+  return host;
+}
 
 let dbInstance = null;
 
@@ -60,10 +95,18 @@ const db = {
 async function initDB() {
   const { Client, Pool } = require('pg');
 
-  const dbUrl = process.env.DATABASE_URL;
+  let dbUrl = process.env.DATABASE_URL;
+  let pgHost = process.env.DB_HOST || 'localhost';
+
+  // Manually resolve hosts to IPv4 to prevent IPv6 routing failures (ENETUNREACH) on Render
+  if (dbUrl) {
+    dbUrl = await resolveDbUrlToIPv4(dbUrl);
+  } else {
+    pgHost = await resolveHostToIPv4(pgHost);
+  }
+
   const pgUser = process.env.DB_USER || 'postgres';
   const pgPassword = process.env.DB_PASSWORD || 'postgres';
-  const pgHost = process.env.DB_HOST || 'localhost';
   const pgPort = process.env.DB_PORT || 5432;
   const pgDatabase = process.env.DB_NAME || 'farmease';
 
