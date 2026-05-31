@@ -374,26 +374,27 @@ const downloadReceiptPDF = (slip) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.text("Crop Description", 18, 123.5);
-  doc.text("Bags Count", 65, 123.5, { align: "right" });
-  doc.text("Gross Wt (Qtl)", 95, 123.5, { align: "right" });
-  doc.text("Deductions (Qtl)", 132, 123.5, { align: "right" });
-  doc.text("Net Wt (Qtl)", 162, 123.5, { align: "right" });
-  doc.text("Rate / Qtl", 192, 123.5, { align: "right" });
+  doc.text("Bags Count", 60, 123.5, { align: "right" });
+  doc.text("Weight (Qtl)", 90, 123.5, { align: "right" });
+  doc.text("Rate / Qtl", 125, 123.5, { align: "right" });
+  doc.text("Gross Value", 160, 123.5, { align: "right" });
+  doc.text("Deductions", 192, 123.5, { align: "right" });
 
   // Detail Row Values
   doc.setTextColor(30, 30, 30);
   doc.setFont("helvetica", "normal");
   doc.text(String(slip.crop_name), 18, 133);
-  doc.text(`${slip.bag_count} bags`, 65, 133, { align: "right" });
+  doc.text(`${slip.bag_count} bags`, 60, 133, { align: "right" });
 
-  const grossWt = Number(slip.quintals || 0) + Number(slip.deductions || 0);
-  doc.text(grossWt.toFixed(2), 95, 133, { align: "right" });
-  doc.text(Number(slip.deductions || 0).toFixed(2), 132, 133, { align: "right" });
+  doc.text(Number(slip.quintals || 0).toFixed(2), 90, 133, { align: "right" });
+  doc.text(`INR ${Number(slip.rate_per_quintal || 0).toFixed(2)}`, 125, 133, { align: "right" });
 
-  doc.setFont("helvetica", "bold");
-  doc.text(Number(slip.quintals || 0).toFixed(2), 162, 133, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.text(`INR ${Number(slip.rate_per_quintal || 0).toFixed(2)}`, 192, 133, { align: "right" });
+  const grossVal = Number(slip.quintals || 0) * Number(slip.rate_per_quintal || 0);
+  doc.text(`INR ${grossVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 160, 133, { align: "right" });
+
+  doc.setTextColor(180, 50, 50); // elegant red for deductions
+  doc.text(`-INR ${Number(slip.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 192, 133, { align: "right" });
+  doc.setTextColor(30, 30, 30); // reset color
 
   // Underline table row
   doc.setDrawColor(220, 220, 220);
@@ -602,7 +603,7 @@ const downloadPaymentReceiptPDF = (receipt) => {
   doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 131);
   doc.setFontSize(7);
   doc.setTextColor(110, 110, 110);
-  doc.text(`Rate: ₹${Number(receipt.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl | Deductions: ${Number(receipt.deductions || 0).toFixed(2)} Qtl`, 18, 135);
+  doc.text(`Rate: ₹${Number(receipt.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl | Deductions: ₹${Number(receipt.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 18, 135);
   doc.setFontSize(9);
   doc.setTextColor(30, 30, 30);
   doc.text(`${Number(receipt.quintals || 0).toFixed(2)} Qtl`, 65, 133, { align: "right" });
@@ -2695,11 +2696,13 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                     return (
                       <div key={slip.id} className="bg-slate-950 p-4 rounded-xl border border-slate-850 flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
                         <div className="space-y-1 text-xs">
-                          <span className="font-bold text-amber-400">{slip.slip_id} ({slip.crop_name})</span>
-                          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-slate-400 mt-2">
+                          <span className="font-bold text-amber-400 text-sm">{slip.slip_id} ({slip.crop_name})</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-slate-400 mt-2">
                             <div>Weight: <span className="font-bold text-white">{edits.quintals} Qtl</span> <span className="text-[10px] text-slate-500">(Original: {slip.quintals} Qtl)</span></div>
-                            <div>Rate: <span className="font-bold text-white">₹{edits.rate_per_quintal}/Qtl</span> <span className="text-[10px] text-slate-500">(Original: ₹{slip.rate_per_quintal})</span></div>
-                            <div>Deductions: <span className="font-bold text-red-400">-{edits.deductions} Qtl</span> <span className="text-[10px] text-slate-500">(Original: -{slip.deductions} Qtl)</span></div>
+                            <div className="bg-emerald-950/20 px-2 py-0.5 rounded border border-emerald-900/30 text-emerald-400 font-bold self-start">
+                              Proposed Rate: ₹{edits.rate_per_quintal}/Qtl <span className="text-[10px] text-slate-500 font-normal ml-1">(Original: ₹{slip.rate_per_quintal})</span>
+                            </div>
+                            <div>Deducted Amount: <span className="font-bold text-red-400">₹{Number(edits.deductions || 0).toLocaleString('en-IN')}</span> <span className="text-[10px] text-slate-500">(Original: ₹{Number(slip.deductions || 0).toLocaleString('en-IN')})</span></div>
                             <div>Total Payout: <span className="font-bold text-emerald-400">₹{edits.total_payout?.toLocaleString('en-IN')}</span> <span className="text-[10px] text-slate-500">(Original: ₹{slip.total_payout?.toLocaleString('en-IN')})</span></div>
                           </div>
                         </div>
@@ -2736,13 +2739,24 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                           <span className="text-slate-500">|</span>
                           <span className="text-xs text-slate-400">{new Date(slip.created_at).toLocaleDateString()}</span>
                         </div>
-                        <h4 className="text-sm font-bold text-white mt-1">{slip.crop_name}</h4>
-                        <div className="text-xs text-slate-400 mt-1 space-y-1 bg-slate-950/40 p-3 rounded-lg border border-slate-800/50">
+                        <div className="flex items-center gap-3 mt-2 pb-2 border-b border-slate-800/30">
+                          <h4 className="text-base font-extrabold text-white">{slip.crop_name}</h4>
+                          <span className="text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold shadow-sm">
+                            Rate: ₹{Number(slip.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-400 mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 bg-slate-950/40 p-3 rounded-lg border border-slate-800/50">
                           <p><span className="font-semibold text-slate-300">Farmer:</span> {slip.farmer_name || 'N/A'} ({slip.farmer_village || 'N/A'})</p>
                           <p><span className="font-semibold text-slate-300">Phone:</span> {slip.farmer_phone || 'N/A'}</p>
                           <p><span className="font-semibold text-slate-300">Operator:</span> {slip.weighed_by_name || 'Mandi Operator'}</p>
-                          <p><span className="font-semibold text-slate-300">Rate per Quintal:</span> ₹{Number(slip.rate_per_quintal || 0).toFixed(2)} | <span className="font-semibold text-slate-300">Bags:</span> {slip.bag_count}</p>
-                          <p><span className="font-semibold text-slate-300">Weighed:</span> {slip.quintals.toFixed(2)} Qtl | <span className="font-semibold text-slate-300">Deductions:</span> {slip.deductions.toFixed(2)} Qtl</p>
+                          <p><span className="font-semibold text-slate-300">Bags:</span> {slip.bag_count} Bags</p>
+                          <p><span className="font-semibold text-slate-300">Weight:</span> <span className="font-bold text-white">{slip.quintals.toFixed(2)} Qtl</span></p>
+                          <p>
+                            <span className="font-semibold text-slate-300">Deducted Amount:</span>{' '}
+                            <span className={`font-bold ${slip.deductions > 0 ? 'text-red-400' : 'text-slate-400'}`}>
+                              ₹{Number(slip.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </span>
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 justify-between md:justify-end">
@@ -2875,7 +2889,7 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                           <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-semibold">Market Rate / Qtl</span>
                           <span className="font-semibold text-slate-300">₹{Number(row.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl</span>
                           {Number(row.deductions || 0) > 0 && (
-                            <span className="text-[9px] text-rose-400 block font-semibold">(Ded: {Number(row.deductions || 0).toFixed(2)} Qtl)</span>
+                            <span className="text-[9px] text-rose-400 block font-semibold">(Deducted: ₹{Number(row.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})</span>
                           )}
                         </div>
                       </div>
@@ -3535,9 +3549,9 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                     <tr className="bg-slate-900 text-slate-400 font-bold uppercase tracking-wider">
                       <th className="p-3">Slip ID</th>
                       <th className="p-3">Farmer</th>
-                      <th className="p-3">Crop</th>
-                      <th className="p-3">Weight (Qtl)</th>
-                      <th className="p-3">Deductions (Qtl)</th>
+                      <th className="p-3">Crop Details</th>
+                      <th className="p-3">Weight</th>
+                      <th className="p-3">Deducted Amount</th>
                       <th className="p-3">Expected Payout</th>
                     </tr>
                   </thead>
@@ -3545,11 +3559,17 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                     {procurements.map((proc) => (
                       <tr key={proc.id} className="hover:bg-slate-900/20">
                         <td className="p-3 font-bold text-emerald-400">{proc.slip_id}</td>
-                        <td className="p-3">{proc.farmer_name}</td>
-                        <td className="p-3">{proc.crop_name}</td>
+                        <td className="p-3">
+                          <span className="font-bold text-white block">{proc.farmer_name}</span>
+                          <span className="text-[10px] text-slate-500 block">{proc.farmer_village}</span>
+                        </td>
+                        <td className="p-3">
+                          <span className="font-semibold block">{proc.crop_name}</span>
+                          <span className="text-[10px] text-emerald-400 font-bold block">Rate: ₹{Number(proc.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl</span>
+                        </td>
                         <td className="p-3 font-semibold">{proc.quintals.toFixed(2)} Qtl</td>
-                        <td className="p-3">{proc.deductions.toFixed(2)} Qtl</td>
-                        <td className="p-3 font-extrabold text-white">₹{proc.total_payout.toLocaleString('en-IN')}</td>
+                        <td className="p-3 font-semibold text-red-400">₹{proc.deductions.toFixed(2)}</td>
+                        <td className="p-3 font-extrabold text-emerald-400">₹{proc.total_payout.toLocaleString('en-IN')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3824,12 +3844,12 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                     <span className="font-bold text-white">{(parseFloat(quintals) || 0).toFixed(2)} Qtl</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Deductions:</span>
-                    <span className="font-bold text-red-400">-{parseFloat(deductions || 0).toFixed(2)} Qtl</span>
+                    <span className="text-slate-400">Deducted Amount:</span>
+                    <span className="font-bold text-red-400">-₹{(parseFloat(deductions || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between border-t border-slate-800 pt-2">
-                    <span className="text-slate-300 font-semibold">Net Payable:</span>
-                    <span className="font-extrabold text-white">{(Math.max(0, parseFloat(quintals || 0) - parseFloat(deductions || 0))).toFixed(2)} Quintals</span>
+                  <div className="flex justify-between border-t border-slate-800 pt-2 text-slate-300">
+                    <span className="font-semibold">Net Quantity Weighed:</span>
+                    <span className="font-bold text-white">{(parseFloat(quintals) || 0).toFixed(2)} Qtl</span>
                   </div>
                   <div className="flex justify-between border-t border-slate-800 pt-2 text-emerald-400">
                     <span className="font-bold">Total Expected Pay:</span>
@@ -5682,7 +5702,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                       <span className="text-[10px] text-slate-500 mt-1 block font-semibold">Original: {selectedSlipForEdit.bag_count} bags</span>
                     </div>
                     <div>
-                      <label className="block font-semibold text-slate-300 mb-1.5 font-sans">Deductions (Quintals)</label>
+                      <label className="block font-semibold text-slate-300 mb-1.5 font-sans">Deductions Amount (₹)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -5690,7 +5710,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                         onChange={e => setEditSlipDeductions(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono"
                       />
-                      <span className="text-[10px] text-slate-500 mt-1 block font-semibold">Original: {selectedSlipForEdit.deductions} Qtl</span>
+                      <span className="text-[10px] text-slate-500 mt-1 block font-semibold">Original: ₹{Number(selectedSlipForEdit.deductions || 0).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
 
@@ -5744,7 +5764,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                         <td className="p-3.5">
                           <span className="font-semibold block">{slip.crop_name}</span>
                           <span className="text-[10px] text-slate-400 block mt-0.5">
-                            Weight: {slip.quintals.toFixed(2)} Qtl | Bags: {slip.bag_count} | Deductions: {slip.deductions.toFixed(2)} Qtl
+                            Weight: {slip.quintals.toFixed(2)} Qtl | Bags: {slip.bag_count} | Deducted: ₹{Number(slip.deductions || 0).toLocaleString('en-IN')}
                           </span>
                         </td>
                         <td className="p-3.5 font-bold">₹{slip.total_payout.toLocaleString('en-IN')}</td>
@@ -7018,12 +7038,12 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                     <span className="font-bold text-white">{(parseFloat(quintals) || 0).toFixed(2)} Qtl</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Deductions:</span>
-                    <span className="font-bold text-red-400">-{parseFloat(deductions || 0).toFixed(2)} Qtl</span>
+                    <span className="text-slate-400">Deducted Amount:</span>
+                    <span className="font-bold text-red-400">-₹{(parseFloat(deductions || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between border-t border-slate-800 pt-2">
-                    <span className="text-slate-300 font-semibold">Net Payable:</span>
-                    <span className="font-extrabold text-white">{(Math.max(0, parseFloat(quintals || 0) - parseFloat(deductions || 0))).toFixed(2)} Quintals</span>
+                  <div className="flex justify-between border-t border-slate-800 pt-2 text-slate-300">
+                    <span className="font-semibold">Net Quantity Weighed:</span>
+                    <span className="font-bold text-white">{(parseFloat(quintals) || 0).toFixed(2)} Qtl</span>
                   </div>
                   <div className="flex justify-between border-t border-slate-800 pt-2 text-emerald-400">
                     <span className="font-bold">Total Expected Pay:</span>
