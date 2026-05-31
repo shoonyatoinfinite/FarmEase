@@ -168,10 +168,12 @@ function enrichReceiptRow(receipt) {
 router.get('/receipts', verifyToken, checkRole(['farmer']), async (req, res) => {
   try {
     const receipts = await db.all(
-      `SELECT p.*, e.name as weighed_by_name, pay.payment_mode, pay.paid_amount, pay.due_amount
+      `SELECT p.*, e.name as weighed_by_name, pay.payment_mode, pay.paid_amount, pay.due_amount,
+              u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village
        FROM procurements p
        LEFT JOIN users e ON p.weighed_by = e.id
        LEFT JOIN farmer_payments pay ON pay.procurement_id = p.id
+       LEFT JOIN users u ON p.farmer_id = u.id
        WHERE p.farmer_id = ?
        ORDER BY p.created_at DESC`,
       [req.user.id]

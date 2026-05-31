@@ -260,66 +260,213 @@ const playBeepSound = () => {
 const downloadReceiptPDF = (slip) => {
   const doc = new jsPDF();
 
+  // Page Border Frame
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.5);
+  doc.rect(10, 10, 190, 277);
+
+  // Top header banner
   doc.setFillColor(27, 67, 50);
-  doc.rect(0, 0, 210, 30, 'F');
+  doc.rect(10, 10, 190, 25, 'F');
 
+  // Branding text
   doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.text("FARMEASE DIGITAL PROCUREMENT SLIP", 14, 20);
+  doc.text("FARMEASE", 15, 22);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.text("CONNECTING FARMERS, WORKERS & BUSINESSES", 15, 28);
 
-  doc.setTextColor(50, 50, 50);
+  // Document Title inside banner
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("DIGITAL PROCUREMENT SLIP", 195, 26, { align: "right" });
+
+  // Metadata Box (Y: 42, H: 16)
+  doc.setFillColor(245, 247, 245);
+  doc.rect(15, 42, 180, 16, 'F');
+  doc.setDrawColor(220, 225, 220);
+  doc.rect(15, 42, 180, 16);
+
+  // Metadata Values
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text(`SLIP NUMBER: ${slip.slip_id}`, 14, 40);
-  doc.text(`DATE GENERATED: ${new Date(slip.created_at || Date.now()).toLocaleString()}`, 14, 46);
-
-  doc.line(14, 52, 196, 52);
-
-  // Section 1: Farmer & Operator Info
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text("FARMER & LOGISTICS DETAILS:", 14, 62);
+  doc.text("SLIP NUMBER:", 20, 52);
   doc.setFont("helvetica", "normal");
-  doc.text(`Farmer Name: ${slip.farmer_name || 'N/A'}`, 14, 70);
-  doc.text(`Field Village: ${slip.farmer_village || 'N/A'}`, 14, 76);
-  doc.text(`Phone Number: ${slip.farmer_phone || 'N/A'}`, 14, 82);
-  doc.text(`Weighed/Issued By: ${slip.weighed_by_name || 'Mandi Operator'}`, 14, 88);
-
-  doc.line(14, 94, 196, 94);
-
-  // Section 2: Metrics
-  doc.setFont("helvetica", "bold");
-  doc.text("PROCUREMENT METRICS:", 14, 104);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Crop Name: ${slip.crop_name}`, 14, 112);
-  doc.text(`Bag Count: ${slip.bag_count} bags`, 14, 118);
-  doc.text(`Deductions: ${Number(slip.deductions || 0).toFixed(2)} Qtl`, 14, 124);
-
-  doc.setFont("helvetica", "bold");
-  doc.text(`FINAL NET WEIGHT: ${Number(slip.quintals || 0).toFixed(2)} Quintals`, 14, 136);
-
-  doc.line(14, 146, 196, 146);
-
-  // Section 3: Ledger
-  doc.text("PAYOUT LEDGER:", 14, 156);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Rate per Quintal: INR ${Number(slip.rate_per_quintal || 0).toFixed(2)}`, 14, 164);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(27, 67, 50);
-  doc.text(`TOTAL EXPECTED PAYOUT: INR ${Number(slip.total_payout || 0).toLocaleString()}`, 14, 174);
+  doc.setTextColor(30, 30, 30);
+  doc.text(String(slip.slip_id), 47, 52);
 
   doc.setTextColor(100, 100, 100);
-  doc.setFontSize(8);
-  doc.text("Weighed and approved digitally by FarmEase field office staff.", 14, 190);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATE GENERATED:", 105, 52);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(30, 30, 30);
+  doc.text(new Date(slip.created_at || Date.now()).toLocaleString(), 140, 52);
 
+  // Entity details cards (Farmer vs logistics) (Y: 65, H: 36)
+  // Card 1: Farmer Details
+  doc.setFillColor(250, 250, 250);
+  doc.rect(15, 65, 87, 36, 'F');
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(15, 65, 87, 36);
+
+  doc.setFillColor(27, 67, 50);
+  doc.rect(15, 65, 87, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("FARMER DETAILS", 20, 70);
+
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(9);
+  doc.text("Name:", 20, 79);
+  doc.text("Village:", 20, 86);
+  doc.text("Phone:", 20, 93);
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(slip.farmer_name || 'N/A'), 40, 79);
+  doc.text(String(slip.farmer_village || 'N/A'), 40, 86);
+  doc.text(String(slip.farmer_phone || 'N/A'), 40, 93);
+
+  // Card 2: Logistics Details
+  doc.setFillColor(250, 250, 250);
+  doc.rect(108, 65, 87, 36, 'F');
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(108, 65, 87, 36);
+
+  doc.setFillColor(27, 67, 50);
+  doc.rect(108, 65, 87, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("LOGISTICS & MANDI DETAILS", 113, 70);
+
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(9);
+  doc.text("Weighed By:", 113, 79);
+  doc.text("Mandi Loc:", 113, 86);
+  doc.text("Status:", 113, 93);
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(slip.weighed_by_name || 'Mandi Operator'), 138, 79);
+  doc.text(String(slip.farmer_village || 'Central Warehouse'), 138, 86);
+  doc.setTextColor(27, 67, 50);
+  doc.setFont("helvetica", "bold");
+  doc.text("VERIFIED & APPROVED", 138, 93);
+
+  // Table header & rows
+  doc.setTextColor(27, 67, 50);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("PROCUREMENT METRICS", 15, 114);
+
+  doc.setFillColor(235, 245, 240);
+  doc.rect(15, 118, 180, 8, 'F');
+  doc.setDrawColor(200, 220, 210);
+  doc.line(15, 118, 195, 118);
+  doc.line(15, 126, 195, 126);
+
+  doc.setTextColor(27, 67, 50);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Crop Description", 18, 123.5);
+  doc.text("Bags Count", 65, 123.5, { align: "right" });
+  doc.text("Gross Wt (Qtl)", 95, 123.5, { align: "right" });
+  doc.text("Deductions (Qtl)", 132, 123.5, { align: "right" });
+  doc.text("Net Wt (Qtl)", 162, 123.5, { align: "right" });
+  doc.text("Rate / Qtl", 192, 123.5, { align: "right" });
+
+  // Detail Row Values
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(slip.crop_name), 18, 133);
+  doc.text(`${slip.bag_count} bags`, 65, 133, { align: "right" });
+
+  const grossWt = Number(slip.quintals || 0) + Number(slip.deductions || 0);
+  doc.text(grossWt.toFixed(2), 95, 133, { align: "right" });
+  doc.text(Number(slip.deductions || 0).toFixed(2), 132, 133, { align: "right" });
+
+  doc.setFont("helvetica", "bold");
+  doc.text(Number(slip.quintals || 0).toFixed(2), 162, 133, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.text(`INR ${Number(slip.rate_per_quintal || 0).toFixed(2)}`, 192, 133, { align: "right" });
+
+  // Underline table row
+  doc.setDrawColor(220, 220, 220);
+  doc.line(15, 138, 195, 138);
+
+  // Financial summary & scale image (Y: 145)
+  // Right Col: Payout Highlight Box
+  doc.setFillColor(240, 248, 243);
+  doc.rect(108, 145, 87, 24, 'F');
+  doc.setDrawColor(27, 67, 50);
+  doc.rect(108, 145, 87, 24);
+
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("TOTAL EXPECTED PAYOUT", 113, 151);
+
+  doc.setTextColor(27, 67, 50);
+  doc.setFontSize(13.5);
+  doc.setFont("helvetica", "bold");
+  doc.text(`INR ${Number(slip.total_payout || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 113, 162);
+
+  // Left Col: Image Attachment frame or placeholder
   if (slip.weight_image) {
     try {
-      doc.addImage(slip.weight_image, 'PNG', 14, 198, 70, 45);
-      doc.text("Weight Certificate Scale Snapshot Attached", 14, 248);
+      doc.setDrawColor(220, 220, 220);
+      doc.rect(15, 145, 80, 50);
+      doc.addImage(slip.weight_image, 'PNG', 16, 146, 78, 48);
+      doc.setTextColor(120, 120, 120);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(7.5);
+      doc.text("Verified Scale Weight Certificate Scale Snapshot", 15, 199);
     } catch (err) {
       console.warn('PDF image rendering error:', err);
     }
+  } else {
+    // Elegant placeholder frame
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(15, 145, 80, 50);
+    doc.setTextColor(150, 150, 150);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("No scale certificate image uploaded", 55, 172, { align: "center" });
   }
+
+  // Signatures section (Y: 235)
+  doc.setDrawColor(180, 180, 180);
+  doc.line(25, 245, 80, 245);
+  doc.setTextColor(80, 80, 80);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Farmer's Signature", 52.5, 250, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("I hereby certify the weights & bags count details", 52.5, 254, { align: "center" });
+
+  doc.line(130, 245, 185, 245);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Authorized Signatory", 157.5, 250, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Weighed & Approved digitally via Mandi Gate", 157.5, 254, { align: "center" });
+
+  // Footer (Y: 270)
+  doc.setDrawColor(230, 230, 230);
+  doc.line(15, 268, 195, 268);
+
+  doc.setTextColor(120, 120, 120);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Thank you for partnering with FarmEase. For support call +91 1800-FARM-EASE or email help@farmease.org.", 105, 273, { align: "center" });
+  doc.text("This document is a legally valid digital weighing slip generated by FarmEase Mandi Logistics.", 105, 277, { align: "center" });
 
   doc.save(`farmease-slip-${slip.slip_id}.pdf`);
   triggerToastGlobal('PDF Downloaded 📄', `Slip ${slip.slip_id} saved to your device.`);
@@ -330,64 +477,238 @@ const downloadPaymentReceiptPDF = (receipt) => {
   const breakdownRows = receipt?.breakdown?.byMode || [];
   const isSettlement = (receipt?.receipt_type || '').toLowerCase() === 'settlement';
 
+  // Page Border Frame
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.5);
+  doc.rect(10, 10, 190, 277);
+
+  // Top header banner
   doc.setFillColor(22, 122, 80);
-  doc.rect(0, 0, 210, 30, 'F');
+  doc.rect(10, 10, 190, 25, 'F');
 
+  // Branding text
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FARMEASE PAYMENT RECEIPT', 14, 20);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("FARMEASE", 15, 22);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.text("CONNECTING FARMERS, WORKERS & BUSINESSES", 15, 28);
 
-  doc.setTextColor(40, 48, 43);
-  doc.setFontSize(10);
-  doc.text(`Receipt No: ${receipt.receipt_no}`, 14, 40);
-  doc.text(`Date: ${new Date(receipt.created_at).toLocaleString()}`, 14, 46);
-  doc.line(14, 52, 196, 52);
-
+  // Document Title inside banner
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Farmer Details', 14, 62);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Name: ${receipt.farmer_name || 'Farmer'}`, 14, 70);
-  doc.text(`Phone: ${receipt.farmer_phone || '-'}`, 14, 76);
-  doc.text(`Village: ${receipt.farmer_village || '-'}`, 14, 82);
+  doc.text(isSettlement ? "SETTLEMENT RECEIPT" : "PAYMENT RECEIPT", 195, 26, { align: "right" });
 
-  doc.setFont('helvetica', 'bold');
-  doc.text('Procurement Details', 14, 96);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Slip: ${receipt.slip_id || '-'}`, 14, 104);
-  doc.text(`Crop: ${receipt.crop_name || '-'}`, 14, 110);
-  doc.text(`Quantity: ${Number(receipt.quintals || 0).toFixed(2)} Quintals`, 14, 116);
+  // Metadata Box (Y: 42, H: 16)
+  doc.setFillColor(245, 247, 245);
+  doc.rect(15, 42, 180, 16, 'F');
+  doc.setDrawColor(220, 225, 220);
+  doc.rect(15, 42, 180, 16);
 
-  doc.setFont('helvetica', 'bold');
-  doc.text(isSettlement ? 'Full Payment Settlement' : 'Payment Ledger', 14, 132);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Payment Mode: ${(receipt.payment_mode || '-').toUpperCase()}`, 14, 140);
-  doc.text(isSettlement ? `Settlement Amount: ${formatCurrency(receipt.amount_paid)}` : `Amount Paid Now: ${formatCurrency(receipt.amount_paid)}`, 14, 148);
-  doc.text(`Total Procurement Amount: ${formatCurrency(receipt.total_amount)}`, 14, 156);
-  doc.text(`Total Paid After This Payment: ${formatCurrency(receipt.total_paid_after)}`, 14, 164);
+  // Metadata Values
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("RECEIPT NO:", 20, 52);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(30, 30, 30);
+  doc.text(String(receipt.receipt_no), 45, 52);
 
-  let nextY = 172;
-  if (breakdownRows.length > 0) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Mode-wise payment totals', 14, nextY);
-    nextY += 7;
-    doc.setFont('helvetica', 'normal');
-    breakdownRows.forEach((row) => {
-      doc.text(`${String(row.payment_mode || '').toUpperCase()}: ${formatCurrency(row.total)} (${row.count} txns)`, 14, nextY);
-      nextY += 6;
-    });
-    nextY += 2;
-  }
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "bold");
+  doc.text("TRANSACTION DATE:", 105, 52);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(30, 30, 30);
+  doc.text(new Date(receipt.created_at).toLocaleString(), 145, 52);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(Number(receipt.due_after || 0) > 0 ? 183 : 22, Number(receipt.due_after || 0) > 0 ? 121 : 122, Number(receipt.due_after || 0) > 0 ? 31 : 80);
-  doc.text(`Remaining Due: ${formatCurrency(receipt.due_after)}`, 14, nextY);
+  // Entity details cards (Farmer vs Transaction) (Y: 65, H: 36)
+  // Card 1: Farmer Details
+  doc.setFillColor(250, 250, 250);
+  doc.rect(15, 65, 87, 36, 'F');
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(15, 65, 87, 36);
+
+  doc.setFillColor(22, 122, 80);
+  doc.rect(15, 65, 87, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("FARMER DETAILS", 20, 70);
 
   doc.setTextColor(100, 100, 100);
   doc.setFontSize(9);
-  doc.text(`Issued by: ${receipt.issued_by_name || 'FarmEase Admin'}`, 14, nextY + 14);
-  doc.text('This receipt records the payment transaction and remaining due balance, if any.', 14, nextY + 22);
+  doc.text("Name:", 20, 79);
+  doc.text("Village:", 20, 86);
+  doc.text("Phone:", 20, 93);
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(receipt.farmer_name || 'Farmer'), 40, 79);
+  doc.text(String(receipt.farmer_village || '-'), 40, 86);
+  doc.text(String(receipt.farmer_phone || '-'), 40, 93);
+
+  // Card 2: Transaction Details
+  doc.setFillColor(250, 250, 250);
+  doc.rect(108, 65, 87, 36, 'F');
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(108, 65, 87, 36);
+
+  doc.setFillColor(22, 122, 80);
+  doc.rect(108, 65, 87, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("TRANSACTION METADATA", 113, 70);
+
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(9);
+  doc.text("Slip Ref ID:", 113, 79);
+  doc.text("Payment Mode:", 113, 86);
+  doc.text("Issued By:", 113, 93);
+
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(receipt.slip_id || '-'), 143, 79);
+  doc.setFont("helvetica", "bold");
+  doc.text(String(receipt.payment_mode || '-').toUpperCase(), 143, 86);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(receipt.issued_by_name || 'FarmEase Admin'), 143, 93);
+
+  // Table header & row (Y: 114)
+  doc.setTextColor(22, 122, 80);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("PAYMENT & LEDGER SUMMARY", 15, 114);
+
+  doc.setFillColor(235, 245, 240);
+  doc.rect(15, 118, 180, 8, 'F');
+  doc.setDrawColor(200, 220, 210);
+  doc.line(15, 118, 195, 118);
+  doc.line(15, 126, 195, 126);
+
+  doc.setTextColor(22, 122, 80);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Crop Description", 18, 123.5);
+  doc.text("Quantity", 65, 123.5, { align: "right" });
+  doc.text("Total Value", 100, 123.5, { align: "right" });
+  doc.text("Amount Paid Now", 140, 123.5, { align: "right" });
+  doc.text("Cumulative Paid", 185, 123.5, { align: "right" });
+
+  // Table Values
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 133);
+  doc.text(`${Number(receipt.quintals || 0).toFixed(2)} Qtl`, 65, 133, { align: "right" });
+  doc.text(formatCurrency(receipt.total_amount), 100, 133, { align: "right" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(22, 122, 80);
+  doc.text(formatCurrency(receipt.amount_paid), 140, 133, { align: "right" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(30, 30, 30);
+  doc.text(formatCurrency(receipt.total_paid_after), 185, 133, { align: "right" });
+
+  // Underline table row
+  doc.setDrawColor(220, 220, 220);
+  doc.line(15, 138, 195, 138);
+
+  // Breakdown & Outstanding (Y: 145, H: 45)
+  // Left side: Mode-wise totals
+  if (breakdownRows.length > 0) {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(15, 145, 87, 45, 'F');
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(15, 145, 87, 45);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(80, 80, 80);
+    doc.text("MODE-WISE PAYMENT TOTALS", 20, 152);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    let rowY = 160;
+    breakdownRows.forEach((row) => {
+      doc.text(`${String(row.payment_mode || '').toUpperCase()}:`, 20, rowY);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 30, 30);
+      doc.text(`${formatCurrency(row.total)} (${row.count} txns)`, 50, rowY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      rowY += 6;
+    });
+  } else {
+    doc.setFillColor(250, 250, 250);
+    doc.rect(15, 145, 87, 45, 'F');
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(15, 145, 87, 45);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("This receipt details the specific ledger update,", 20, 158);
+    doc.text("reflecting payments processed directly for the", 20, 164);
+    doc.text("linked weighing slip. All transactions are logged", 20, 170);
+    doc.text("safely in the FarmEase accounts database.", 20, 176);
+  }
+
+  // Right side: Remaining Due highlight box
+  const remainingDue = Number(receipt.due_after || 0);
+  const isCleared = remainingDue <= 0;
+
+  if (isCleared) {
+    doc.setFillColor(240, 248, 243); // Soft green background
+    doc.setDrawColor(22, 122, 80); // Border green
+  } else {
+    doc.setFillColor(254, 242, 242); // Soft red background
+    doc.setDrawColor(220, 38, 38); // Border red
+  }
+  doc.rect(108, 145, 87, 24, 'F');
+  doc.rect(108, 145, 87, 24);
+
+  doc.setTextColor(isCleared ? 22 : 180, isCleared ? 122 : 50, isCleared ? 80 : 50);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.text("OUTSTANDING LEDGER BALANCE", 113, 151);
+
+  doc.setFontSize(13.5);
+  if (isCleared) {
+    doc.text("₹0.00 (SETTLED)", 113, 162);
+  } else {
+    doc.text(formatCurrency(remainingDue), 113, 162);
+  }
+
+  // Signatures section (Y: 235)
+  doc.setDrawColor(180, 180, 180);
+  doc.line(25, 245, 80, 245);
+  doc.setTextColor(80, 80, 80);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Farmer's Signature", 52.5, 250, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("I acknowledge receipt of the payment amount above.", 52.5, 254, { align: "center" });
+
+  doc.line(130, 245, 185, 245);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Authorized Representative", 157.5, 250, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Payment Disbursed & Signed Digitally", 157.5, 254, { align: "center" });
+
+  // Footer (Y: 270)
+  doc.setDrawColor(230, 230, 230);
+  doc.line(15, 268, 195, 268);
+
+  doc.setTextColor(120, 120, 120);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Thank you for partnering with FarmEase. For support call +91 1800-FARM-EASE or email help@farmease.org.", 105, 273, { align: "center" });
+  doc.text("This document is a legally valid digital transaction receipt generated by FarmEase Accounts.", 105, 277, { align: "center" });
 
   doc.save(`farmease-payment-${receipt.receipt_no}.pdf`);
   triggerToastGlobal('Payment Receipt Downloaded', `${receipt.receipt_no} saved to your device.`);
@@ -646,7 +967,7 @@ function HelplineChat({ token, peerId, translate, user }) {
   };
 
   return (
-    <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between h-[55vh] shadow-lg">
+    <div className="glass-panel bg-slate-900/40 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between h-[55vh] shadow-lg">
       <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -655,7 +976,7 @@ function HelplineChat({ token, peerId, translate, user }) {
         {messages.length > 0 && (
           <button
             onClick={handleClearConversation}
-            className="text-[10px] bg-red-950/40 hover:bg-red-900/50 border border-red-900/50 text-red-400 font-bold px-2 py-1 rounded-lg transition cursor-pointer select-none flex items-center gap-1"
+            className="text-[10px] bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-bold px-2 py-1 rounded-lg transition cursor-pointer select-none flex items-center gap-1"
           >
             <Trash2 size={10} />
             Clear Chat
@@ -685,7 +1006,7 @@ function HelplineChat({ token, peerId, translate, user }) {
                   }`}>
                   {!isMe && <span className="block font-bold text-[9px] text-emerald-600 dark:text-emerald-400 uppercase mb-1">{msg.sender_name}</span>}
                   <p>{msg.message}</p>
-                  <span className={`block text-[8px] text-right mt-1 ${isMe ? 'text-emerald-100 dark:text-rose-200' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className={`block text-[8px] text-right mt-1 ${isMe ? 'text-emerald-800/80 dark:text-rose-200' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 {!isMe && msg.id && (
                   <button
@@ -729,6 +1050,17 @@ function ProfileEditor({ token, setToken, user, onUserUpdate }) {
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState(user.pin || '');
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setName(user.name || '');
+    setEmail(user.email || '');
+    setAddress(user.address || '');
+    setVillage(user.village || '');
+    setUpiId(user.upi_id || '');
+    setPin(user.pin || '');
+    setPassword('');
+  }, [user]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -761,6 +1093,7 @@ function ProfileEditor({ token, setToken, user, onUserUpdate }) {
         }
         if (onUserUpdate) onUserUpdate(data.user);
         setPassword('');
+        setIsEditing(false);
       } else {
         triggerToastGlobal('Update Failed', data.message, 'warning');
       }
@@ -770,6 +1103,58 @@ function ProfileEditor({ token, setToken, user, onUserUpdate }) {
       setLoading(false);
     }
   };
+
+  if (!isEditing) {
+    return (
+      <div className="glass-panel p-6 rounded-2xl max-w-xl border border-slate-800 bg-slate-900/40 text-xs">
+        <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-3">
+          <div>
+            <h3 className="font-display font-extrabold text-lg text-white">Personal Profile</h3>
+            <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider font-bold">Role: {user.role}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-4 rounded-xl cursor-pointer transition select-none flex items-center gap-1.5"
+          >
+            <Edit2 size={13} />
+            Edit Profile
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-300">
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Full Name</span>
+            <span className="text-white font-semibold text-sm">{name || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Email Address</span>
+            <span className="text-white font-semibold text-sm">{email || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Village Name</span>
+            <span className="text-white font-semibold text-sm">{village || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">UPI ID</span>
+            <span className="text-white font-semibold text-sm">{upiId || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850 sm:col-span-2">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Address Location</span>
+            <span className="text-white font-semibold text-sm leading-relaxed">{address || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Security PIN</span>
+            <span className="text-white font-semibold text-sm font-mono">******</span>
+          </div>
+          <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-850">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Phone Number</span>
+            <span className="text-white font-semibold text-sm font-mono">{user.phone}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="glass-panel p-6 rounded-2xl max-w-xl border border-slate-800 bg-slate-900/40">
@@ -810,9 +1195,23 @@ function ProfileEditor({ token, setToken, user, onUserUpdate }) {
           </div>
         </div>
 
-        <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg mt-2 cursor-pointer transition select-none" disabled={loading}>
-          {loading ? 'Saving Changes...' : 'Save Profile Changes'}
-        </button>
+        <div className="flex gap-3">
+          <button type="button" onClick={() => {
+            setName(user.name || '');
+            setEmail(user.email || '');
+            setAddress(user.address || '');
+            setVillage(user.village || '');
+            setUpiId(user.upi_id || '');
+            setPin(user.pin || '');
+            setPassword('');
+            setIsEditing(false);
+          }} className="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-lg mt-2 cursor-pointer transition select-none">
+            Cancel
+          </button>
+          <button type="submit" className="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg mt-2 cursor-pointer transition select-none" disabled={loading}>
+            {loading ? 'Saving Changes...' : 'Save Profile Changes'}
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -962,12 +1361,62 @@ export default function App() {
       try {
         const decoded = JSON.parse(atob(token.split('.')[1]));
         setUser(decoded);
+
+        // Fetch full profile info from backend
+        fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('Failed to fetch profile details');
+        })
+        .then(fullUser => {
+          setUser(fullUser);
+        })
+        .catch(err => {
+          console.warn('Could not fetch full user details, relying on token payload:', err);
+        });
       } catch (err) {
         localStorage.removeItem('fe_token');
         setToken(null);
       }
     }
   }, [token]);
+
+  useEffect(() => {
+    if (token && user) {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+      socketRef.current = io(apiBase, {
+        auth: { token }
+      });
+
+      socketRef.current.emit('join_room', `user_${user.id}`);
+      console.log(`Socket joined room: user_${user.id}`);
+
+      // Socket event listeners
+      socketRef.current.on('new_chat_message', (data) => {
+        if (data.sender_id !== user.id) {
+          triggerToast(`New Message from ${data.sender_name || 'Staff'} 💬`, data.message);
+        }
+      });
+
+      socketRef.current.on('new_broadcast', (data) => {
+        triggerToast(`Broadcast Alert 📢`, `${data.title}: ${data.message}`, 'warning');
+      });
+
+      socketRef.current.on('notification_received', (data) => {
+        triggerToast(data.title || 'Notification 🔔', data.message || 'You have received an update.');
+        fetchNotifications();
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
+        }
+      };
+    }
+  }, [token, user]);
 
   const handleLogout = () => {
     localStorage.removeItem('fe_token');
@@ -1040,7 +1489,7 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 mt-6">
         {toast && (
-          <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-2xl flex gap-3 items-start border animate-slide-up max-w-sm ${toast.type === 'success'
+          <div className={`toast fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-2xl flex gap-3 items-start border animate-slide-up max-w-sm ${toast.type === 'success'
               ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-100'
               : 'bg-amber-950/90 border-amber-500/50 text-amber-100'
             }`}>
@@ -1102,7 +1551,7 @@ export default function App() {
             onClick={() => setShowNotificationsPanel(false)}
           />
           {/* Drawer */}
-          <div className="fixed top-0 right-0 h-screen w-80 sm:w-96 bg-slate-950/95 border-l border-slate-850 backdrop-blur-md shadow-2xl p-6 z-50 overflow-y-auto animate-slide-left flex flex-col justify-between">
+          <div className="notification-drawer fixed top-0 right-0 h-screen w-80 sm:w-96 bg-slate-950/95 border-l border-slate-850 backdrop-blur-md shadow-2xl p-6 z-50 overflow-y-auto animate-slide-left flex flex-col justify-between">
             <div className="space-y-6 flex-grow overflow-y-auto pr-1">
               <div className="flex justify-between items-center border-b border-slate-850 pb-4">
                 <div className="flex items-center gap-2">
@@ -1155,8 +1604,7 @@ export default function App() {
                       <div
                         key={n.id}
                         onClick={() => { if (!n.is_read) markSingleAsRead(n.id); }}
-                        className={`p-3.5 rounded-xl border flex gap-3 text-xs leading-relaxed transition cursor-pointer select-none relative ${n.is_read ? 'bg-slate-900/30 border-slate-850 opacity-60 hover:opacity-90' : `${bg} shadow-md`
-                          }`}
+                        className={`notification-item ${n.is_read ? 'notification-item-read bg-slate-900/30 border-slate-850 opacity-60 hover:opacity-90' : `notification-item-unread ${bg} shadow-md`} p-3.5 rounded-xl border flex gap-3 text-xs leading-relaxed transition cursor-pointer select-none relative`}
                       >
                         <div className="mt-0.5 p-2 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center self-start">
                           {icon}
@@ -2284,7 +2732,13 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                           <span className="text-xs text-slate-400">{new Date(slip.created_at).toLocaleDateString()}</span>
                         </div>
                         <h4 className="text-sm font-bold text-white mt-1">{slip.crop_name}</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">Weighed: {slip.quintals.toFixed(2)} Quintals | Deductions: {slip.deductions.toFixed(2)} Qtl | Bags: {slip.bag_count}</p>
+                        <div className="text-xs text-slate-400 mt-1 space-y-1 bg-slate-950/40 p-3 rounded-lg border border-slate-800/50">
+                          <p><span className="font-semibold text-slate-300">Farmer:</span> {slip.farmer_name || 'N/A'} ({slip.farmer_village || 'N/A'})</p>
+                          <p><span className="font-semibold text-slate-300">Phone:</span> {slip.farmer_phone || 'N/A'}</p>
+                          <p><span className="font-semibold text-slate-300">Operator:</span> {slip.weighed_by_name || 'Mandi Operator'}</p>
+                          <p><span className="font-semibold text-slate-300">Rate per Quintal:</span> ₹{Number(slip.rate_per_quintal || 0).toFixed(2)} | <span className="font-semibold text-slate-300">Bags:</span> {slip.bag_count}</p>
+                          <p><span className="font-semibold text-slate-300">Weighed:</span> {slip.quintals.toFixed(2)} Qtl | <span className="font-semibold text-slate-300">Deductions:</span> {slip.deductions.toFixed(2)} Qtl</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4 justify-between md:justify-end">
                         <div className="text-right">
@@ -2924,7 +3378,7 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                           defaultValue=""
                         >
                           <option value="" disabled>Assign Worker Driver</option>
-                          {workers.map(w => (
+                          {workers.filter(w => w.role === 'worker').map(w => (
                             <option key={w.id} value={w.id}>{w.name}</option>
                           ))}
                         </select>
@@ -3303,6 +3757,8 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
 
   const [recoveryRequests, setRecoveryRequests] = useState([]);
 
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+
   // Expected payout calculation: (quintals * rate) - deductions
   useEffect(() => {
     const q = parseFloat(quintals) || 0.0;
@@ -3502,9 +3958,8 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
   const [newCostNote, setNewCostNote] = useState('');
 
   const [showLogFuelForm, setShowLogFuelForm] = useState(false);
-  const [fuelLogVehicleId, setFuelLogVehicleId] = useState('');
+  const [fuelLogVehicleNumber, setFuelLogVehicleNumber] = useState('');
   const [fuelLogFuel, setFuelLogFuel] = useState('');
-  const [fuelLogKm, setFuelLogKm] = useState('');
 
   const [loading, setLoading] = useState(false);
 
@@ -3776,6 +4231,25 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
     }
   };
 
+  const handleDeleteRecovery = async (id) => {
+    if (!confirm('Are you sure you want to remove this recovery request history record?')) return;
+    try {
+      const res = await fetch(`/api/admin/forgot-password/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        triggerToastGlobal('Record Removed 🗑️', 'Recovery request history deleted.');
+        fetchRecoveryRequests();
+      } else {
+        triggerToastGlobal('Action Failed', data.message, 'warning');
+      }
+    } catch (e) {
+      triggerToastGlobal('Error', 'Connection failed.', 'warning');
+    }
+  };
+
   const handleClearDueAdvance = async (daId, user_name, amount, type) => {
     if (!confirm(`Are you sure you want to mark this ${type} of ₹${amount} for ${user_name} as fully cleared?`)) return;
     setLoading(true);
@@ -3956,9 +4430,11 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
       });
       if (res.ok) {
         triggerToastGlobal('Task Dispatched! 📋', 'Worker dashboard updated with duty details.');
+        setTaskWorkerId('');
         setTaskTitle('');
         setTaskDesc('');
         setTaskDue('');
+        setShowAddTaskForm(false);
       }
     } catch (e) { }
   };
@@ -4427,8 +4903,8 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
 
   const handleLogFuel = async (e) => {
     e.preventDefault();
-    if (!fuelLogVehicleId) {
-      triggerToastGlobal('Validation Error ❌', 'Please select a vehicle.', 'warning');
+    if (!fuelLogVehicleNumber) {
+      triggerToastGlobal('Validation Error ❌', 'Please enter a vehicle number.', 'warning');
       return;
     }
     try {
@@ -4436,16 +4912,15 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
-          vehicle_id: parseInt(fuelLogVehicleId),
-          fuel_expense: parseFloat(fuelLogFuel) || 0.0,
-          km_driven: parseFloat(fuelLogKm) || 0.0
+          vehicle_number: fuelLogVehicleNumber,
+          fuel_expense: parseFloat(fuelLogFuel) || 0.0
         })
       });
       const data = await res.json();
       if (res.ok) {
-        triggerToastGlobal('Fuel Logged 🚜', 'Fuel and mileage logs updated successfully.');
+        triggerToastGlobal('Fuel Logged 🚜', 'Fuel logs updated successfully.');
         setFuelLogFuel('');
-        setFuelLogKm('');
+        setFuelLogVehicleNumber('');
         setShowLogFuelForm(false);
         fetchVehicles();
         fetchDashboardStats();
@@ -4745,8 +5220,8 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{v.type} | Driver: {v.assigned_to_name}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-slate-300 font-medium">{v.km_driven.toFixed(1)} km driven</span>
-                      <p className="text-[10px] text-red-400 font-semibold mt-0.5">Fuel costs: ₹{v.fuel_expense.toLocaleString()}</p>
+                      <span className="text-xs text-red-400 font-bold">₹{v.fuel_expense.toLocaleString()}</span>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Fuel Cost</p>
                     </div>
                   </div>
                 ))}
@@ -5056,7 +5531,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                       <span className="text-slate-400 block font-semibold">Calculated Expected Payout comparison:</span>
                       <div className="flex gap-4 mt-1 font-bold">
                         <span className="text-slate-500 font-normal">Original: <span className="text-white font-semibold">₹{selectedSlipForEdit.total_payout?.toLocaleString()}</span></span>
-                        <span className="text-emerald-400">Proposed: <span>₹{((parseFloat(editSlipWeight || 0) - parseFloat(editSlipDeductions || 0)) * parseFloat(editSlipRate || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
+                        <span className="text-emerald-400">Proposed: <span>₹{((parseFloat(editSlipWeight || 0) * parseFloat(editSlipRate || 0)) - parseFloat(editSlipDeductions || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
                       </div>
                     </div>
                     <button
@@ -5251,11 +5726,6 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{v.type} | Driver: {v.assigned_to_name || 'Unassigned'}</p>
                           <div className="flex gap-4 mt-3 text-xs">
                             <div>
-                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Mileage</span>
-                              <p className="font-semibold text-slate-200 mt-0.5">{v.km_driven.toFixed(1)} km</p>
-                            </div>
-                            <div className="border-l border-slate-800 h-6 align-middle self-center"></div>
-                            <div>
                               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Fuel Cost</span>
                               <p className="font-semibold text-red-400 mt-0.5">₹{v.fuel_expense.toLocaleString()}</p>
                             </div>
@@ -5308,48 +5778,42 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
             </div>
 
             <div className="lg:col-span-1 space-y-6">
-              {/* Card 1: Log Vehicle Fuel & Mileage */}
+              {/* Card 1: Log Vehicle Fuel Expense */}
               <div className="glass-panel p-6 rounded-2xl space-y-4 border border-slate-800 bg-slate-900/40">
                 <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                  <h3 className="font-display font-extrabold text-sm text-white flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Log Fuel & Mileage</h3>
+                  <h3 className="font-display font-extrabold text-sm text-white flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Log Fuel Expense</h3>
                 </div>
                 <form onSubmit={handleLogFuel} className="space-y-3 text-xs">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">Select Fleet Asset *</label>
-                    <select value={fuelLogVehicleId} onChange={e => setFuelLogVehicleId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white">
-                      <option value="">-- Choose Vehicle --</option>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">Vehicle Plate Number *</label>
+                    <input
+                      type="text"
+                      list="fleet-vehicles"
+                      value={fuelLogVehicleNumber}
+                      onChange={e => setFuelLogVehicleNumber(formatIndianVehicleNumber(e.target.value))}
+                      placeholder="e.g. HR-56-Y-7890"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white font-mono"
+                      required
+                    />
+                    <datalist id="fleet-vehicles">
                       {vehicles.map(v => (
-                        <option key={v.id} value={v.id}>{v.vehicle_number} ({v.type})</option>
+                        <option key={v.id} value={v.vehicle_number}>{v.type}</option>
                       ))}
-                    </select>
+                    </datalist>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Fuel Expense (₹) *</label>
-                      <input
-                        type="number"
-                        value={fuelLogFuel}
-                        onChange={e => setFuelLogFuel(e.target.value)}
-                        placeholder="e.g. 1500"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white font-mono"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Kilometers Driven *</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={fuelLogKm}
-                        onChange={e => setFuelLogKm(e.target.value)}
-                        placeholder="e.g. 85.5"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white font-mono"
-                        required
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">Fuel Expense (₹) *</label>
+                    <input
+                      type="number"
+                      value={fuelLogFuel}
+                      onChange={e => setFuelLogFuel(e.target.value)}
+                      placeholder="e.g. 1500"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white font-mono"
+                      required
+                    />
                   </div>
                   <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition cursor-pointer select-none">
-                    Log Fuel & Kms
+                    Log Fuel Expense
                   </button>
                 </form>
               </div>
@@ -5806,6 +6270,13 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                   <Clock size={14} />
                   {staffTabMode === 'list' ? 'Daily Pay Feed Ledger' : 'View Staff Accounts List'}
                 </button>
+                <button
+                  onClick={() => setShowAddTaskForm(!showAddTaskForm)}
+                  className="bg-purple-800 hover:bg-purple-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl cursor-pointer transition select-none flex items-center gap-1.5"
+                >
+                  <Calendar size={14} />
+                  {showAddTaskForm ? 'Close Dispatcher' : 'Dispatch Custom Duty'}
+                </button>
                 {staffTabMode === 'list' && (
                   <button
                     onClick={() => setShowAddStaffForm(!showAddStaffForm)}
@@ -5826,6 +6297,65 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                 )}
               </div>
             </div>
+
+            {/* TASK DISPATCHER FORM */}
+            {showAddTaskForm && (
+              <form onSubmit={handleAssignTask} className="glass-panel p-6 rounded-2xl text-xs space-y-4 animate-slide-up border border-slate-800 bg-slate-900/40 max-w-xl mb-6">
+                <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                  <Calendar size={16} className="text-purple-400" />
+                  Dispatch Custom Task / Duty
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1.5">Assign to Staff Member *</label>
+                    <select
+                      value={taskWorkerId}
+                      onChange={e => setTaskWorkerId(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white"
+                      required
+                    >
+                      <option value="">-- Choose Member --</option>
+                      {staff.filter(s => s.role === 'worker').map(s => (
+                        <option key={s.id} value={s.id}>{s.name} ({translate(s.role)})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1.5">Due Date *</label>
+                    <input
+                      type="date"
+                      value={taskDue}
+                      onChange={e => setTaskDue(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white font-mono"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-slate-300 mb-1.5">Task Title *</label>
+                    <input
+                      type="text"
+                      value={taskTitle}
+                      onChange={e => setTaskTitle(e.target.value)}
+                      placeholder="e.g. Inspect harvest quality at North Farm"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-slate-300 mb-1.5">Detailed Description</label>
+                    <textarea
+                      value={taskDesc}
+                      onChange={e => setTaskDesc(e.target.value)}
+                      placeholder="Specify clear instructions for this worker..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white h-20 outline-none"
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition select-none">
+                  Dispatch Task
+                </button>
+              </form>
+            )}
 
             {/* REGISTER NEW STAFF FORM */}
             {staffTabMode === 'list' && showAddStaffForm && (
@@ -6347,7 +6877,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
 
         {activeTab === 'chat' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[60vh]">
-            <div className="glass-panel p-4 rounded-2xl lg:col-span-1 space-y-2 overflow-y-auto shadow-lg">
+            <div className="glass-panel bg-slate-900/40 border border-slate-800 p-4 rounded-2xl lg:col-span-1 space-y-2 overflow-y-auto shadow-lg">
               <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
                 <span>Helpline Contacts</span>
                 {totalAdminUnreadCount > 0 && (
@@ -6367,7 +6897,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                   }}
                   className={`w-full text-left p-3 rounded-xl border transition text-xs flex flex-col gap-0.5 cursor-pointer ${activePeerId === cu.id
                       ? 'helpline-contact-btn-active font-bold shadow-sm'
-                      : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-transparent text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                      : 'helpline-contact-btn-inactive bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-transparent text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/60'
                     }`}
                 >
                   <div className="flex justify-between items-center w-full">
@@ -6383,7 +6913,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
               ))}
             </div>
 
-            <div className="glass-panel p-4 rounded-2xl lg:col-span-2 flex flex-col justify-between h-full shadow-lg">
+            <div className="glass-panel bg-slate-900/40 border border-slate-800 p-4 rounded-2xl lg:col-span-2 flex flex-col justify-between h-full shadow-lg">
               {activePeerId ? (
                 <>
                   <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-3 flex items-center justify-between">
@@ -6396,7 +6926,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                     {messages.length > 0 && (
                       <button
                         onClick={() => handleClearConversationAdmin(activePeerId)}
-                        className="text-[10px] bg-red-950/40 hover:bg-red-900/50 border border-red-900/50 text-red-400 font-bold px-2 py-1 rounded-lg transition cursor-pointer select-none flex items-center gap-1"
+                        className="text-[10px] bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-bold px-2 py-1 rounded-lg transition cursor-pointer select-none flex items-center gap-1"
                       >
                         <Trash2 size={10} />
                         Clear Chat
@@ -6426,7 +6956,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                               }`}>
                               {!isMe && <span className="block font-bold text-[9px] text-emerald-700 dark:text-emerald-400 uppercase mb-1">{msg.sender_name}</span>}
                               <p>{msg.message}</p>
-                              <span className={`block text-[8px] text-right mt-1.5 ${isMe ? 'text-emerald-700/70 dark:text-rose-200' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className={`block text-[8px] text-right mt-1.5 ${isMe ? 'text-emerald-800/80 dark:text-rose-200' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                             {!isMe && msg.id && (
                               <button
@@ -6533,7 +7063,17 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                               </button>
                             </div>
                           ) : (
-                            <span className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">Resolved</span>
+                            <div className="flex justify-end items-center gap-3">
+                              <span className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">Resolved</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteRecovery(req.id)}
+                                className="bg-red-950/20 text-red-400 hover:bg-red-900 border border-red-900/30 hover:border-red-900/50 font-bold px-2.5 py-1.5 rounded-lg transition cursor-pointer text-[9px] uppercase tracking-wider flex items-center gap-1"
+                              >
+                                <Trash2 size={12} />
+                                Remove
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

@@ -229,25 +229,43 @@ router.get('/vehicles', verifyToken, checkRole(['admin', 'employee']), async (re
 });
 
 // POST /api/admin/vehicles/expense
-// Log vehicle mileage and fuel expense
+// Log vehicle fuel expense
 router.post('/vehicles/expense', verifyToken, checkRole(['admin', 'worker', 'employee']), async (req, res) => {
-  const { vehicle_id, fuel_expense, km_driven } = req.body;
+  const { vehicle_id, vehicle_number, fuel_expense } = req.body;
 
-  if (!vehicle_id || fuel_expense === undefined || km_driven === undefined) {
-    return res.status(400).json({ message: 'Vehicle ID, fuel expense, and km driven are required.' });
+  if (fuel_expense === undefined || isNaN(parseFloat(fuel_expense))) {
+    return res.status(400).json({ message: 'Valid fuel expense is required.' });
   }
 
   try {
-    const vehicle = await db.get('SELECT * FROM vehicles WHERE id = ?', [vehicle_id]);
+    let vehicle = null;
+
+    if (vehicle_id) {
+      vehicle = await db.get('SELECT * FROM vehicles WHERE id = ?', [vehicle_id]);
+    } else if (vehicle_number) {
+      const formattedNumber = formatIndianVehicleNumber(vehicle_number);
+      vehicle = await db.get('SELECT * FROM vehicles WHERE LOWER(vehicle_number) = LOWER(?)', [formattedNumber]);
+      
+      if (!vehicle) {
+        // Automatically create new vehicle since it does not exist
+        const result = await db.run(
+          `INSERT INTO vehicles (vehicle_number, type, assigned_to, fuel_expense, km_driven, last_updated) 
+           VALUES (?, ?, NULL, ?, 0.0, CURRENT_DATE)`,
+          [formattedNumber, 'Tractor Trolley', parseFloat(fuel_expense)]
+        );
+        return res.json({ message: 'Vehicle created and fuel logs updated successfully.' });
+      }
+    }
+
     if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found.' });
+      return res.status(404).json({ message: 'Vehicle not found and no vehicle number provided.' });
     }
 
     await db.run(
       `UPDATE vehicles 
-       SET fuel_expense = fuel_expense + ?, km_driven = km_driven + ?, last_updated = CURRENT_DATE 
+       SET fuel_expense = fuel_expense + ?, last_updated = CURRENT_DATE 
        WHERE id = ?`,
-      [parseFloat(fuel_expense), parseFloat(km_driven), vehicle_id]
+      [parseFloat(fuel_expense), vehicle.id]
     );
 
     res.json({ message: 'Vehicle logs updated successfully.' });
@@ -879,6 +897,26 @@ router.post('/forgot-password/:id/:action', verifyToken, checkRole(['admin']), a
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error resolving request.' });
+  }
+});
+
+// DELETE /api/admin/forgot-password/:id
+// Deletes a password recovery request (only if it is resolved: approved or rejected)
+router.delete('/forgot-password/:id', verifyToken, checkRole(['admin']), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const request = await db.get('SELECT * FROM forgot_password_requests WHERE id = ?', [id]);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found.' });
+    }
+    if (request.status === 'pending') {
+      return res.status(400).json({ message: 'Cannot delete a pending recovery request.' });
+    }
+    await db.run('DELETE FROM forgot_password_requests WHERE id = ?', [id]);
+    res.json({ message: 'Recovery request deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error deleting recovery request.' });
   }
 });
 

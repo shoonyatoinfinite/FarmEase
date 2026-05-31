@@ -94,19 +94,23 @@ router.patch('/:id/assign', verifyToken, checkRole(['admin', 'employee']), async
       return res.status(404).json({ message: 'Pickup request not found.' });
     }
 
-    const nextStatus = status || 'assigned';
+    const finalEmployeeId = assigned_employee_id !== undefined ? assigned_employee_id : request.assigned_employee_id;
+    const finalWorkerId = assigned_worker_id !== undefined ? assigned_worker_id : request.assigned_worker_id;
+    const finalAdminNote = admin_note !== undefined ? admin_note : request.admin_note;
+    const nextStatus = status || request.status || 'assigned';
 
     await db.run(
       `UPDATE pickup_requests 
        SET assigned_employee_id = ?, assigned_worker_id = ?, admin_note = ?, status = ?
        WHERE id = ?`,
-      [assigned_employee_id || null, assigned_worker_id || null, admin_note || '', nextStatus, requestId]
+      [finalEmployeeId, finalWorkerId, finalAdminNote, nextStatus, requestId]
     );
 
     // Get updated details for notifications
     const farmerId = request.farmer_id;
-    const farmer = await db.get('SELECT name FROM users WHERE id = ?', [farmerId]);
+    const farmer = await db.get('SELECT name, village FROM users WHERE id = ?', [farmerId]);
     const farmerName = farmer ? farmer.name : 'Unknown Farmer';
+    const villageName = farmer?.village || 'Gokulpur';
     
     // Create notifications for Farmer
     await db.run(
@@ -114,21 +118,22 @@ router.patch('/:id/assign', verifyToken, checkRole(['admin', 'employee']), async
       [farmerId, `Your pickup request for ${request.crop_name} is now ${nextStatus}. Staff assigned.`]
     );
 
-    // Create notification for assigned Worker (if updated)
-    if (assigned_worker_id) {
+    // Create notification for assigned Worker (if newly updated/assigned)
+    const isNewWorker = finalWorkerId && (finalWorkerId !== request.assigned_worker_id);
+    if (isNewWorker) {
       await db.run(
         `INSERT INTO notifications (user_id, title, message) VALUES (?, 'New Task Assigned 📋', ?)`,
-        [assigned_worker_id, `You have been assigned a pickup task at Gokulpur for farmer ${farmerName}.`]
+        [finalWorkerId, `You have been assigned a pickup task at ${villageName} for farmer ${farmerName}.`]
       );
 
       // Create a Task automatically for the worker
       await db.run(
         `INSERT INTO tasks (assigned_to, assigned_by, title, description, status, due_date) VALUES (?, ?, ?, ?, 'pending', ?)`,
         [
-          assigned_worker_id, 
+          finalWorkerId, 
           req.user.id, 
           `Crop Pickup: ${request.crop_name}`, 
-          `Go to Gokulpur village and collect estimated ${request.estimated_quantity} quintals from ${farmerName}. Address: ${request.address}`,
+          `Go to ${villageName} village and collect estimated ${request.estimated_quantity} quintals from ${farmerName}. Address: ${request.address}`,
           request.pickup_date
         ]
       );
@@ -137,8 +142,8 @@ router.patch('/:id/assign', verifyToken, checkRole(['admin', 'employee']), async
     // Push socket alerts
     if (req.io) {
       req.io.to(`user_${farmerId}`).emit('notification_received', { title: 'Pickup Request Update', status: nextStatus });
-      if (assigned_worker_id) {
-        req.io.to(`user_${assigned_worker_id}`).emit('notification_received', { title: 'New Task Assigned' });
+      if (finalWorkerId) {
+        req.io.to(`user_${finalWorkerId}`).emit('notification_received', { title: 'New Task Assigned' });
       }
     }
 

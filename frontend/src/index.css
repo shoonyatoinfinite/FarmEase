@@ -688,6 +688,17 @@ body:not(.dark) .glass-panel:hover {
   color: #ffffff !important;
 }
 
+/* Active tab style inside light mode */
+body:not(.dark) .bg-emerald-950 {
+  background-color: #ecfdf5 !important; /* Soft light emerald background */
+  border-color: #a7f3d0 !important;     /* Light emerald border */
+  color: #065f46 !important;            /* Dark emerald text */
+}
+
+body:not(.dark) .bg-emerald-950 * {
+  color: #065f46 !important;
+}
+
 /* Active tab style inside dark mode is gold/amber or clear red */
 .dark .bg-emerald-950 {
   background-color: rgba(225, 29, 72, 0.15) !important;
@@ -703,13 +714,13 @@ body:not(.dark) .glass-panel:hover {
    PREMIUM HELPLINE CHAT LIGHT/DARK DECORATIVE SYSTEMS
    ---------------------------------------------------- */
 .helpline-bubble-me {
-  background-color: #10b981 !important;
-  border: 1px solid #059669 !important;
-  color: #ffffff !important;
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #065f46 !important;
 }
 
 .helpline-bubble-me * {
-  color: #ffffff !important;
+  color: #065f46 !important;
 }
 
 .helpline-bubble-peer {
@@ -773,4 +784,133 @@ body:not(.dark) .glass-panel:hover {
 .dark .helpline-contact-subtext-active {
   color: #fca5a5 !important;
   opacity: 0.95;
+}
+
+/* Light Theme Overrides for Notification Drawer and Toasts */
+body:not(.dark) .notification-drawer {
+  background-color: #ffffff !important;
+  border-left: 1px solid #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+body:not(.dark) .notification-drawer h3,
+body:not(.dark) .notification-drawer h4 {
+  color: #1f2937 !important;
+}
+
+body:not(.dark) .notification-drawer p {
+  color: #4b5563 !important;
+}
+
+body:not(.dark) .notification-drawer span {
+  color: #4b5563 !important;
+}
+
+body:not(.dark) .notification-item-read {
+  background-color: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  opacity: 0.75 !important;
+}
+
+body:not(.dark) .notification-item-unread {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+body:not(.dark) .notification-item-unread.bg-emerald-950\/50 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+body:not(.dark) .notification-item-unread.bg-amber-950\/50 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+body:not(.dark) .notification-item-unread.bg-cyan-950\/50 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+}
+
+body:not(.dark) .notification-item-unread.bg-purple-950\/50 {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+
+body:not(.dark) .notification-item-unread .text-emerald-400 {
+  color: #059669 !important;
+}
+body:not(.dark) .notification-item-unread .text-amber-400 {
+  color: #d97706 !important;
+}
+body:not(.dark) .notification-item-unread .text-cyan-400 {
+  color: #0891b2 !important;
+}
+body:not(.dark) .notification-item-unread .text-purple-400 {
+  color: #7c3aed !important;
+}
+
+body:not(.dark) .toast {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+body:not(.dark) .toast.bg-emerald-950\/90 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+body:not(.dark) .toast.bg-emerald-950\/90 * {
+  color: #065f46 !important;
+}
+
+body:not(.dark) .toast.bg-amber-950\/90 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+body:not(.dark) .toast.bg-amber-950\/90 * {
+  color: #92400e !important;
+}
+
+/* Helpline inactive contact slide styles in light theme */
+body:not(.dark) .helpline-contact-btn-inactive {
+  background-color: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+}
+
+body:not(.dark) .helpline-contact-btn-inactive:hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+body:not(.dark) .helpline-contact-btn-inactive .text-slate-800 {
+  color: #1f2937 !important;
+}
+
+body:not(.dark) .helpline-contact-btn-inactive .text-slate-500 {
+  color: #6b7280 !important;
+}
+
+/* Helpline inactive contact slide styles in dark theme override */
+.dark .helpline-contact-btn-inactive {
+  background-color: #081d11 !important; /* Green box background */
+  border-color: rgba(34, 197, 94, 0.18) !important;
+}
+
+.dark .helpline-contact-btn-inactive:hover {
+  background-color: #0f301d !important;
+  border-color: rgba(34, 197, 94, 0.28) !important;
+}
+
+.dark .helpline-contact-btn-inactive .text-slate-800 {
+  color: #ffffff !important;
+}
+
+.dark .helpline-contact-btn-inactive .text-slate-500 {
+  color: #9bcfa3 !important;
 }

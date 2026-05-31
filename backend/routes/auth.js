@@ -310,6 +310,21 @@ router.post('/forgot-password/request', async (req, res) => {
   }
 });
 
+// GET /api/auth/me
+// Retrieve current user profile details
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    const user = await db.get('SELECT id, name, email, phone, role, language, village, address, upi_id, pin FROM users WHERE id = ?', [req.user.id]);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error retrieving profile.' });
+  }
+});
+
 // PATCH /api/auth/profile
 // Update user profile details
 router.patch('/profile', verifyToken, async (req, res) => {
