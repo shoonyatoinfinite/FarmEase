@@ -50,6 +50,7 @@ router.get('/history/:peer_id', verifyToken, async (req, res) => {
   const myId = req.user.id;
   const myRole = req.user.role;
   let peerId = parseInt(req.params.peer_id);
+  const markRead = req.query.markRead !== 'false';
   
   try {
     peerId = await getResolvedPeerId(peerId, myId);
@@ -60,13 +61,15 @@ router.get('/history/:peer_id', verifyToken, async (req, res) => {
 
     if (isMyAdminOrSupervisor && !isPeerAdminOrSupervisor) {
       // I am admin/supervisor, chatting with a regular user.
-      // Mark all messages from this user to any admin/supervisor as read.
-      await db.run(
-        `UPDATE messages SET is_read = TRUE 
-         WHERE receiver_id IN (SELECT id FROM users WHERE role IN ('admin', 'supervisor')) 
-           AND sender_id = ?`,
-        [peerId]
-      );
+      // Mark all messages from this user to any admin/supervisor as read if markRead is true.
+      if (markRead) {
+        await db.run(
+          `UPDATE messages SET is_read = TRUE 
+           WHERE receiver_id IN (SELECT id FROM users WHERE role IN ('admin', 'supervisor')) 
+             AND sender_id = ?`,
+          [peerId]
+        );
+      }
 
       // Get messages between this user and any admin/supervisor.
       const history = await db.all(
@@ -92,13 +95,15 @@ router.get('/history/:peer_id', verifyToken, async (req, res) => {
       res.json(formattedHistory);
     } else if (isPeerAdminOrSupervisor && !isMyAdminOrSupervisor) {
       // I am a regular user, chatting with an admin/supervisor desk.
-      // Mark all messages from any admin/supervisor to me as read.
-      await db.run(
-        `UPDATE messages SET is_read = TRUE 
-         WHERE receiver_id = ? 
-           AND sender_id IN (SELECT id FROM users WHERE role IN ('admin', 'supervisor'))`,
-        [myId]
-      );
+      // Mark all messages from any admin/supervisor to me as read if markRead is true.
+      if (markRead) {
+        await db.run(
+          `UPDATE messages SET is_read = TRUE 
+           WHERE receiver_id = ? 
+             AND sender_id IN (SELECT id FROM users WHERE role IN ('admin', 'supervisor'))`,
+          [myId]
+        );
+      }
 
       // Get messages between me and any admin/supervisor.
       const history = await db.all(
@@ -124,10 +129,12 @@ router.get('/history/:peer_id', verifyToken, async (req, res) => {
       res.json(formattedHistory);
     } else {
       // Standard peer-to-peer (fallback)
-      await db.run(
-        'UPDATE messages SET is_read = TRUE WHERE receiver_id = ? AND sender_id = ?',
-        [myId, peerId]
-      );
+      if (markRead) {
+        await db.run(
+          'UPDATE messages SET is_read = TRUE WHERE receiver_id = ? AND sender_id = ?',
+          [myId, peerId]
+        );
+      }
 
       const history = await db.all(
         `SELECT m.*, u.name as sender_name 

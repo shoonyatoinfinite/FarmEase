@@ -5,9 +5,13 @@ const { verifyToken, checkRole } = require('../middleware/auth');
 
 async function getInstallmentReceipts(procurementId) {
   return db.all(
-    `SELECT pr.*, admin.name as issued_by_name
+    `SELECT pr.*, admin.name as issued_by_name,
+            p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions,
+            u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village
      FROM payment_receipts pr
      LEFT JOIN users admin ON pr.issued_by = admin.id
+     LEFT JOIN procurements p ON pr.procurement_id = p.id
+     LEFT JOIN users u ON pr.farmer_id = u.id
      WHERE pr.procurement_id = ?
        AND COALESCE(pr.receipt_type, 'installment') = 'installment'
      ORDER BY pr.created_at ASC, pr.id ASC`,
@@ -93,7 +97,7 @@ async function createSettlementReceipt({ farmerId, procurementId, farmerPaymentI
 async function getProcurementPaymentSummary(procurementId, { createSettlementIfMissing = false, issuedBy = null } = {}) {
   const record = await db.get(
     `SELECT fp.*,
-            p.slip_id, p.crop_name, p.quintals, p.created_at as procurement_date,
+            p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions, p.created_at as procurement_date,
             u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village
      FROM farmer_payments fp
      LEFT JOIN procurements p ON fp.procurement_id = p.id
@@ -108,9 +112,13 @@ async function getProcurementPaymentSummary(procurementId, { createSettlementIfM
 
   const isFullyPaid = parseFloat(record.due_amount || 0) <= 0;
   let settlementReceipt = await db.get(
-    `SELECT pr.*, admin.name as issued_by_name
+    `SELECT pr.*, admin.name as issued_by_name,
+            p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions,
+            u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village
      FROM payment_receipts pr
      LEFT JOIN users admin ON pr.issued_by = admin.id
+     LEFT JOIN procurements p ON pr.procurement_id = p.id
+     LEFT JOIN users u ON pr.farmer_id = u.id
      WHERE pr.procurement_id = ? AND pr.receipt_type = 'settlement'
      ORDER BY pr.created_at DESC, pr.id DESC
      LIMIT 1`,
@@ -126,9 +134,13 @@ async function getProcurementPaymentSummary(procurementId, { createSettlementIfM
       issuedBy: issuedBy || record.farmer_id
     });
     settlementReceipt = await db.get(
-      `SELECT pr.*, admin.name as issued_by_name
+      `SELECT pr.*, admin.name as issued_by_name,
+              p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions,
+              u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village
        FROM payment_receipts pr
        LEFT JOIN users admin ON pr.issued_by = admin.id
+       LEFT JOIN procurements p ON pr.procurement_id = p.id
+       LEFT JOIN users u ON pr.farmer_id = u.id
        WHERE pr.procurement_id = ? AND pr.receipt_type = 'settlement'
        ORDER BY pr.created_at DESC, pr.id DESC
        LIMIT 1`,
@@ -145,6 +157,8 @@ async function getProcurementPaymentSummary(procurementId, { createSettlementIfM
     slip_id: record.slip_id,
     crop_name: record.crop_name,
     quintals: record.quintals,
+    rate_per_quintal: record.rate_per_quintal,
+    deductions: record.deductions,
     farmer_id: record.farmer_id,
     farmer_name: record.farmer_name,
     farmer_phone: record.farmer_phone,
@@ -214,7 +228,7 @@ router.get('/transactions', verifyToken, checkRole(['farmer', 'admin']), async (
     }
 
     const transactions = await db.all(
-      `SELECT fp.*, p.slip_id, p.crop_name, p.quintals
+      `SELECT fp.*, p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions
        FROM farmer_payments fp
        LEFT JOIN procurements p ON fp.procurement_id = p.id
        WHERE fp.farmer_id = ?
@@ -272,7 +286,7 @@ router.get('/payment-receipts', verifyToken, checkRole(['farmer']), async (req, 
   try {
     const receipts = await db.all(
       `SELECT pr.*, u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village,
-              p.slip_id, p.crop_name, p.quintals, admin.name as issued_by_name
+              p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions, admin.name as issued_by_name
        FROM payment_receipts pr
        LEFT JOIN users u ON pr.farmer_id = u.id
        LEFT JOIN procurements p ON pr.procurement_id = p.id
@@ -293,7 +307,7 @@ router.get('/payment-receipts/all', verifyToken, checkRole(['admin']), async (re
   try {
     const receipts = await db.all(
       `SELECT pr.*, u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village,
-              p.slip_id, p.crop_name, p.quintals, admin.name as issued_by_name
+              p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions, admin.name as issued_by_name
        FROM payment_receipts pr
        LEFT JOIN users u ON pr.farmer_id = u.id
        LEFT JOIN procurements p ON pr.procurement_id = p.id
@@ -312,7 +326,7 @@ router.get(['/payments/all', '/all'], verifyToken, checkRole(['admin']), async (
   try {
     const list = await db.all(
       `SELECT fp.*, u.name as farmer_name, u.phone as farmer_phone, u.village as farmer_village,
-              p.slip_id, p.crop_name, p.quintals
+              p.slip_id, p.crop_name, p.quintals, p.rate_per_quintal, p.deductions
        FROM farmer_payments fp
        LEFT JOIN users u ON fp.farmer_id = u.id
        LEFT JOIN procurements p ON fp.procurement_id = p.id
@@ -342,6 +356,21 @@ router.post('/payout', verifyToken, checkRole(['admin']), async (req, res) => {
   }
 
   try {
+    // Check for duplicate payout in the last 10 seconds
+    const duplicatePayout = await db.get(
+      `SELECT id FROM payment_receipts 
+       WHERE farmer_id = ? 
+         AND procurement_id = ? 
+         AND ABS(amount_paid - ?) < 0.01 
+         AND payment_mode = ? 
+         AND created_at >= NOW() - INTERVAL '10 seconds'`,
+      [farmerId, procurementId, paidAmount, payment_mode]
+    );
+
+    if (duplicatePayout) {
+      return res.status(400).json({ message: 'A payment receipt with identical details was already generated in the last 10 seconds.' });
+    }
+
     const payment = await db.get(
       'SELECT * FROM farmer_payments WHERE farmer_id = ? AND procurement_id = ?',
       [farmerId, procurementId]

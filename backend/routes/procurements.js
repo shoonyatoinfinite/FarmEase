@@ -63,6 +63,28 @@ router.post('/', verifyToken, checkRole(['admin', 'employee']), async (req, res)
       return res.status(400).json({ message: 'Invalid weight calculation. Quintals must be positive.' });
     }
 
+    // Check for duplicate weight slip in the last 10 seconds
+    const duplicateSlip = await db.get(
+      `SELECT id FROM procurements 
+       WHERE weighed_by = ? 
+         AND farmer_id = ? 
+         AND crop_name = ? 
+         AND ABS(quintals - ?) < 0.01 
+         AND ABS(rate_per_quintal - ?) < 0.01 
+         AND created_at >= NOW() - INTERVAL '10 seconds'`,
+      [
+        req.user.id,
+        resolvedFarmerId,
+        crop_name === 'other' ? customCropName : crop_name,
+        finalQuintals,
+        parseFloat(rate_per_quintal)
+      ]
+    );
+
+    if (duplicateSlip) {
+      return res.status(400).json({ message: 'A weight slip with identical details was already generated in the last 10 seconds.' });
+    }
+
     // 2. Generate unique Slip ID
     const year = new Date().getFullYear();
     const countRecord = await db.get('SELECT COUNT(*) as count FROM procurements');

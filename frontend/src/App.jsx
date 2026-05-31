@@ -169,7 +169,7 @@ const t = {
 
 let triggerToastGlobal = () => { };
 
-const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // Utility to format Indian vehicle registration numbers dynamically
 const formatIndianVehicleNumber = (raw) => {
@@ -599,7 +599,12 @@ const downloadPaymentReceiptPDF = (receipt) => {
   // Table Values
   doc.setTextColor(30, 30, 30);
   doc.setFont("helvetica", "normal");
-  doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 133);
+  doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 131);
+  doc.setFontSize(7);
+  doc.setTextColor(110, 110, 110);
+  doc.text(`Rate: ₹${Number(receipt.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl | Deductions: ${Number(receipt.deductions || 0).toFixed(2)} Qtl`, 18, 135);
+  doc.setFontSize(9);
+  doc.setTextColor(30, 30, 30);
   doc.text(`${Number(receipt.quintals || 0).toFixed(2)} Qtl`, 65, 133, { align: "right" });
   doc.text(formatCurrency(receipt.total_amount), 100, 133, { align: "right" });
 
@@ -2291,7 +2296,7 @@ function RoleDashboard({ user, token, setToken, translate, socket, isOnline, onU
     if (token && user && user.role !== 'admin' && user.role !== 'supervisor') {
       const fetchHelplineUnread = async () => {
         try {
-          const res = await fetch('/api/chat/history/1', { headers: { 'Authorization': `Bearer ${token}` } });
+          const res = await fetch('/api/chat/history/1?markRead=false', { headers: { 'Authorization': `Bearer ${token}` } });
           if (res.ok) {
             const history = await res.json();
             const unread = history.filter(msg => msg.sender_id !== user.id && !msg.is_read).length;
@@ -2524,15 +2529,15 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">TOTAL EARNINGS</span>
-                <h3 className="font-display font-extrabold text-2xl text-white mt-1">₹{paymentSummary.total_amount.toLocaleString()}</h3>
+                <h3 className="font-display font-extrabold text-2xl text-white mt-1">₹{paymentSummary.total_amount.toLocaleString('en-IN')}</h3>
               </div>
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-blue-500">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">AMOUNT RECEIVED</span>
-                <h3 className="font-display font-extrabold text-2xl text-white mt-1">₹{paymentSummary.paid_amount.toLocaleString()}</h3>
+                <h3 className="font-display font-extrabold text-2xl text-white mt-1">₹{paymentSummary.paid_amount.toLocaleString('en-IN')}</h3>
               </div>
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">OUTSTANDING BALANCE</span>
-                <h3 className="font-display font-extrabold text-2xl text-amber-400 mt-1">₹{paymentSummary.due_amount.toLocaleString()}</h3>
+                <h3 className="font-display font-extrabold text-2xl text-amber-400 mt-1">₹{paymentSummary.due_amount.toLocaleString('en-IN')}</h3>
               </div>
             </div>
 
@@ -2695,7 +2700,7 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                             <div>Weight: <span className="font-bold text-white">{edits.quintals} Qtl</span> <span className="text-[10px] text-slate-500">(Original: {slip.quintals} Qtl)</span></div>
                             <div>Rate: <span className="font-bold text-white">₹{edits.rate_per_quintal}/Qtl</span> <span className="text-[10px] text-slate-500">(Original: ₹{slip.rate_per_quintal})</span></div>
                             <div>Deductions: <span className="font-bold text-red-400">-{edits.deductions} Qtl</span> <span className="text-[10px] text-slate-500">(Original: -{slip.deductions} Qtl)</span></div>
-                            <div>Total Payout: <span className="font-bold text-emerald-400">₹{edits.total_payout?.toLocaleString()}</span> <span className="text-[10px] text-slate-500">(Original: ₹{slip.total_payout?.toLocaleString()})</span></div>
+                            <div>Total Payout: <span className="font-bold text-emerald-400">₹{edits.total_payout?.toLocaleString('en-IN')}</span> <span className="text-[10px] text-slate-500">(Original: ₹{slip.total_payout?.toLocaleString('en-IN')})</span></div>
                           </div>
                         </div>
                         <div className="flex gap-2 self-stretch md:self-auto justify-end">
@@ -2742,7 +2747,7 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                       </div>
                       <div className="flex items-center gap-4 justify-between md:justify-end">
                         <div className="text-right">
-                          <span className="font-display font-extrabold text-base text-white">₹{slip.total_payout.toLocaleString()}</span>
+                          <span className="font-display font-extrabold text-base text-white">₹{slip.total_payout.toLocaleString('en-IN')}</span>
                           <p className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5 font-semibold">Expected pay</p>
                         </div>
                         <button
@@ -2800,9 +2805,9 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                     <tr key={row.id} className="hover:bg-slate-900/30">
                       <td className="p-3.5 font-bold">{row.slip_id || 'ADVANCE'}</td>
                       <td className="p-3.5">{row.crop_name || 'N/A'}</td>
-                      <td className="p-3.5">₹{row.total_amount.toLocaleString()}</td>
-                      <td className="p-3.5 text-emerald-400">₹{row.paid_amount.toLocaleString()}</td>
-                      <td className="p-3.5 text-amber-400">₹{row.due_amount.toLocaleString()}</td>
+                      <td className="p-3.5">₹{row.total_amount.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 text-emerald-400">₹{row.paid_amount.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 text-amber-400">₹{row.due_amount.toLocaleString('en-IN')}</td>
                       <td className="p-3.5">{new Date(row.payment_date).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -2810,18 +2815,151 @@ function FarmerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
               </table>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="font-display font-extrabold text-base text-white">Payment Receipts</h4>
-              {paymentReceipts.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-5 border border-slate-800 rounded-xl">No payment receipts have been issued yet.</p>
+            {/* Adjust Payments Section */}
+            <div className="border-t border-slate-800/60 pt-6 space-y-4">
+              <div>
+                <h4 className="font-display font-extrabold text-base text-white flex items-center gap-2">
+                  <Scale className="text-emerald-500" size={18} />
+                  Adjust Payments & Ledger Status
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">Review detail breakdowns of partial payments, pending clearances, and download individual transaction receipts.</p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {ledger.map((row) => {
+                  const installments = paymentReceipts.filter(r => r.procurement_id === row.procurement_id && (r.receipt_type || 'installment') === 'installment');
+                  const settlements = paymentReceipts.filter(r => r.procurement_id === row.procurement_id && r.receipt_type === 'settlement');
+                  
+                  let statusText = 'Pending Payment';
+                  let statusClass = 'border-rose-900 text-rose-400 bg-rose-950/30';
+                  if (row.due_amount === 0) {
+                    statusText = 'Fully Paid & Settled';
+                    statusClass = 'border-emerald-900 text-emerald-400 bg-emerald-950/30';
+                  } else if (row.paid_amount > 0) {
+                    statusText = 'Half Paid / Partial';
+                    statusClass = 'border-amber-900 text-amber-400 bg-amber-950/30';
+                  }
+
+                  return (
+                    <div key={row.id} className="bg-slate-900/20 border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700/60 transition duration-200 space-y-4">
+                      {/* Header row */}
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-800/50 pb-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-400">{row.slip_id || 'ADVANCE'}</span>
+                            <span className="text-slate-600">•</span>
+                            <span className="text-xs text-slate-500">{new Date(row.payment_date).toLocaleDateString()}</span>
+                          </div>
+                          <h5 className="text-sm font-extrabold text-white mt-1">{row.crop_name || 'N/A'}</h5>
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${statusClass} self-start sm:self-auto`}>
+                          {statusText}
+                        </span>
+                      </div>
+
+                      {/* Info row */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs bg-slate-950/30 p-3 rounded-xl border border-slate-900">
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-semibold">Total Price</span>
+                          <span className="font-bold text-white">₹{Number(row.total_amount || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-semibold">Amount Paid</span>
+                          <span className="font-bold text-emerald-400">₹{Number(row.paid_amount || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-semibold">Remaining Due</span>
+                          <span className="font-bold text-amber-400">₹{Number(row.due_amount || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-semibold">Market Rate / Qtl</span>
+                          <span className="font-semibold text-slate-300">₹{Number(row.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl</span>
+                          {Number(row.deductions || 0) > 0 && (
+                            <span className="text-[9px] text-rose-400 block font-semibold">(Ded: {Number(row.deductions || 0).toFixed(2)} Qtl)</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Receipts breakdown list */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">Transaction Receipts</span>
+                        
+                        {/* If no receipts at all */}
+                        {installments.length === 0 && settlements.length === 0 && (
+                          <p className="text-[11px] text-slate-500 italic bg-slate-950/20 py-2.5 px-3 rounded-lg border border-slate-900">
+                            No payment transactions have been logged for this record.
+                          </p>
+                        )}
+
+                        {/* Installments (Partial/Half payments) */}
+                        {installments.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[9px] font-bold text-slate-500 tracking-wide uppercase">Partial Installment Payments:</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {installments.map(inst => (
+                                <div key={inst.id} className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-3 flex items-center justify-between text-[11px]">
+                                  <div>
+                                    <div className="font-bold text-emerald-500">{inst.receipt_no}</div>
+                                    <div className="text-[10px] text-slate-400 mt-0.5">
+                                      Paid: <span className="font-bold text-slate-300">₹{Number(inst.amount_paid).toLocaleString('en-IN')}</span> ({inst.payment_mode.toUpperCase()})
+                                    </div>
+                                    <div className="text-[9px] text-slate-500 mt-0.5">{new Date(inst.created_at).toLocaleString()}</div>
+                                  </div>
+                                  <button
+                                    onClick={() => downloadPaymentReceiptPDF(inst)}
+                                    className="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition cursor-pointer"
+                                    title="Download Installment Receipt"
+                                  >
+                                    <Download size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Full Settlement Receipt */}
+                        {settlements.map(settle => (
+                          <div key={settle.id} className="bg-emerald-950/10 border border-emerald-900/30 rounded-xl p-3.5 flex items-center justify-between text-xs mt-2">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-emerald-400">{settle.receipt_no}</span>
+                                <span className="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800/50 font-bold uppercase tracking-wider">Settled Full</span>
+                              </div>
+                              <p className="text-slate-400 text-[10px] mt-1">
+                                Full payout cleared for total value of <span className="font-bold text-emerald-300">₹{Number(settle.total_amount).toLocaleString('en-IN')}</span>.
+                              </p>
+                              <p className="text-slate-500 text-[9px] mt-0.5">{new Date(settle.created_at).toLocaleString()}</p>
+                            </div>
+                            <button
+                              onClick={() => downloadPaymentReceiptPDF(settle)}
+                              className="p-2 bg-emerald-950/40 hover:bg-emerald-900/40 text-emerald-400 rounded-lg border border-emerald-800/40 transition cursor-pointer"
+                              title="Download Full Settlement Receipt"
+                            >
+                              <Download size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Main Full Payment Receipts Section */}
+            <div className="border-t border-slate-800/60 pt-6 space-y-3">
+              <h4 className="font-display font-extrabold text-base text-white">Full Settlement Receipts</h4>
+              {paymentReceipts.filter(r => (r.receipt_type || '') === 'settlement').length === 0 ? (
+                <p className="text-xs text-slate-500 text-center py-5 border border-slate-800 rounded-xl">No full settlement receipts have been issued yet. Settlement receipts are generated only upon full payment completion.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {paymentReceipts.map((receipt) => (
+                  {paymentReceipts.filter(r => (r.receipt_type || '') === 'settlement').map((receipt) => (
                     <div key={receipt.id} className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 text-xs flex items-center justify-between gap-4">
                       <div>
                         <span className="font-bold text-emerald-400">{receipt.receipt_no}</span>
                         <h5 className="text-sm font-bold text-white mt-1">{receipt.crop_name || 'Payment'} | {receipt.slip_id || 'N/A'}</h5>
-                        <p className="text-slate-400 mt-0.5">Paid: INR {Number(receipt.amount_paid || 0).toLocaleString()} | Due: INR {Number(receipt.due_after || 0).toLocaleString()}</p>
+                        <p className="text-slate-400 mt-0.5">Paid: INR {Number(receipt.amount_paid || 0).toLocaleString('en-IN')} | Due: INR {Number(receipt.due_after || 0).toLocaleString('en-IN')}</p>
                       </div>
                       <button
                         onClick={() => downloadPaymentReceiptPDF(receipt)}
@@ -2955,7 +3093,7 @@ function WorkerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-blue-500 bg-slate-900/40">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Total Earnings</span>
                 <h3 className="font-display font-extrabold text-2xl text-white mt-1">
-                  ₹{attendance.reduce((sum, r) => sum + (r.daily_pay || 0), 0).toLocaleString()}
+                  ₹{attendance.reduce((sum, r) => sum + (r.daily_pay || 0), 0).toLocaleString('en-IN')}
                 </h3>
               </div>
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500 bg-slate-900/40">
@@ -3069,7 +3207,7 @@ function WorkerView({ token, translate, activeTab, setActiveTab, user, onUserUpd
                         <td className="p-3.5">{row.check_in || '-'}</td>
                         <td className="p-3.5">{row.check_out || 'Active shift'}</td>
                         <td className="p-3.5 text-emerald-400 font-bold">{Number(row.working_hours || 0).toFixed(2)}</td>
-                        <td className="p-3.5 font-bold text-white">₹{Number(row.daily_pay || 0).toLocaleString()}</td>
+                        <td className="p-3.5 font-bold text-white">₹{Number(row.daily_pay || 0).toLocaleString('en-IN')}</td>
                         <td className="p-3.5">
                           <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase border ${row.check_out ? 'bg-emerald-950 text-emerald-400 border-emerald-900/50' : 'bg-amber-950 text-amber-400 border-amber-900/50'}`}>
                             {row.check_out ? row.status : 'on duty'}
@@ -3411,7 +3549,7 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                         <td className="p-3">{proc.crop_name}</td>
                         <td className="p-3 font-semibold">{proc.quintals.toFixed(2)} Qtl</td>
                         <td className="p-3">{proc.deductions.toFixed(2)} Qtl</td>
-                        <td className="p-3 font-extrabold text-white">₹{proc.total_payout.toLocaleString()}</td>
+                        <td className="p-3 font-extrabold text-white">₹{proc.total_payout.toLocaleString('en-IN')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3695,7 +3833,7 @@ function EmployeeView({ token, translate, activeTab, setActiveTab, user, onUserU
                   </div>
                   <div className="flex justify-between border-t border-slate-800 pt-2 text-emerald-400">
                     <span className="font-bold">Total Expected Pay:</span>
-                    <span className="font-display font-extrabold text-base">₹{calculatedPayout.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span className="font-display font-extrabold text-base">₹{calculatedPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -4110,6 +4248,27 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
     }
   };
 
+  const handleDownloadSettlementReceipt = async (procurementId) => {
+    try {
+      const res = await fetch(`/api/farmer/payment-receipts/procurement/${procurementId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const summary = await res.json();
+        const chosenReceipt = summary.settlementReceipt;
+        if (chosenReceipt) {
+          downloadPaymentReceiptPDF(chosenReceipt);
+        } else {
+          triggerToastGlobal('No Receipt', 'Settlement receipt not found.', 'warning');
+        }
+      } else {
+        triggerToastGlobal('No Receipt', 'Settlement receipt not found on server.', 'warning');
+      }
+    } catch (e) {
+      triggerToastGlobal('Error', 'Connection failed.', 'warning');
+    }
+  };
+
   useEffect(() => {
     if (activePeerId) {
       fetchChatHistory();
@@ -4455,7 +4614,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
       });
       const data = await res.json();
       if (res.ok) {
-        triggerToastGlobal('Outward Sale Logged 🚚', `Stock cleared. Total revenue recorded: ₹${data.totalSaleAmount.toLocaleString()}`);
+        triggerToastGlobal('Outward Sale Logged 🚚', `Stock cleared. Total revenue recorded: ₹${data.totalSaleAmount.toLocaleString('en-IN')}`);
         confetti({ particleCount: 80, spread: 60 });
         setSaleQty('');
         setSaleBuyer('');
@@ -4860,7 +5019,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
         body: JSON.stringify({ amount, reason })
       });
       if (res.ok) {
-        triggerToastGlobal('Payout Logged! 💸', `INR ${amount.toLocaleString()} paid to ${staffName}.`);
+        triggerToastGlobal('Payout Logged! 💸', `INR ${amount.toLocaleString('en-IN')} paid to ${staffName}.`);
         fetchStaff();
         fetchDashboardStats();
       } else {
@@ -5116,20 +5275,20 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">{translate('netProfit')}</span>
                 <h3 className={`font-display font-extrabold text-xl mt-1 ${stats.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  ₹{stats.netProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ₹{stats.netProfit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </h3>
               </div>
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-blue-500">
                 <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">TOTAL REVENUE</span>
-                <h3 className="font-display font-extrabold text-xl text-white mt-1">₹{stats.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
+                <h3 className="font-display font-extrabold text-xl text-white mt-1">₹{stats.totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
               </div>
-              <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-red-500">
-                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">EXPENSES</span>
-                <h3 className="font-display font-extrabold text-xl text-slate-200 mt-1">₹{stats.totalExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
+              <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-rose-500">
+                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">TOTAL EXPENSES</span>
+                <h3 className="font-display font-extrabold text-xl text-slate-200 mt-1">₹{stats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
               </div>
               <div className="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500">
-                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">OUTSTANDING FARMER DUES</span>
-                <h3 className="font-display font-extrabold text-xl text-amber-400 mt-1">₹{stats.farmerOutstandingDues.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400">FARMER OUTSTANDING DUES</span>
+                <h3 className="font-display font-extrabold text-xl text-amber-400 mt-1">₹{stats.farmerOutstandingDues.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
               </div>
             </div>
 
@@ -5220,7 +5379,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{v.type} | Driver: {v.assigned_to_name}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-red-400 font-bold">₹{v.fuel_expense.toLocaleString()}</span>
+                      <span className="text-xs text-red-400 font-bold">₹{v.fuel_expense.toLocaleString('en-IN')}</span>
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Fuel Cost</p>
                     </div>
                   </div>
@@ -5279,7 +5438,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                   <div key={p.id} className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
                     <div>
                       <span className="font-bold text-white">{p.crop_name}</span>
-                      <p className="text-slate-400 mt-0.5">INR {Number(p.price_per_quintal || 0).toLocaleString()} / Qtl</p>
+                      <p className="text-slate-400 mt-0.5">INR {Number(p.price_per_quintal || 0).toLocaleString('en-IN')} / Qtl</p>
                     </div>
                     <button
                       type="button"
@@ -5394,9 +5553,9 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                         <span className="font-bold text-emerald-400 block">{p.slip_id}</span>
                         <span className="text-slate-400 block mt-0.5">{p.crop_name} - {p.quintals ? `${p.quintals.toFixed(2)} Qtl` : 'N/A'}</span>
                       </td>
-                      <td className="p-3.5 font-bold">₹{p.total_amount.toLocaleString()}</td>
-                      <td className="p-3.5 text-emerald-400">₹{p.paid_amount.toLocaleString()}</td>
-                      <td className="p-3.5 font-bold text-amber-400">₹{p.due_amount.toLocaleString()}</td>
+                      <td className="p-3.5 font-bold">₹{p.total_amount.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 text-emerald-400">₹{p.paid_amount.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 font-bold text-amber-400">₹{p.due_amount.toLocaleString('en-IN')}</td>
                       <td className="p-3.5 text-center">
                         {p.due_amount > 0 ? (
                           <button
@@ -5410,13 +5569,22 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                             Process Payment
                           </button>
                         ) : (
-                          <button
-                            onClick={() => handleShowLatestPaymentReceipt(p.procurement_id)}
-                            className="text-[10px] bg-emerald-950/50 hover:bg-emerald-900 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-900/50 font-bold uppercase tracking-wider cursor-pointer transition"
-                            title="Click to view latest paid slip receipt info"
-                          >
-                            Paid ✅
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleShowLatestPaymentReceipt(p.procurement_id)}
+                              className="text-[10px] bg-emerald-950/50 hover:bg-emerald-900 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-900/50 font-bold uppercase tracking-wider cursor-pointer transition"
+                              title="Click to view latest paid slip receipt info"
+                            >
+                              Paid ✅
+                            </button>
+                            <button
+                              onClick={() => handleDownloadSettlementReceipt(p.procurement_id)}
+                              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition cursor-pointer"
+                              title="Download Settlement Receipt"
+                            >
+                              <Download size={12} />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -5441,7 +5609,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                           </span>
                         )}
                         <h5 className="text-sm font-bold text-white mt-1">{receipt.farmer_name} | {receipt.slip_id || 'N/A'}</h5>
-                        <p className="text-slate-400 mt-0.5">Paid: INR {Number(receipt.amount_paid || 0).toLocaleString()} | Due: INR {Number(receipt.due_after || 0).toLocaleString()}</p>
+                        <p className="text-slate-400 mt-0.5">Paid: INR {Number(receipt.amount_paid || 0).toLocaleString('en-IN')} | Due: INR {Number(receipt.due_after || 0).toLocaleString('en-IN')}</p>
                       </div>
                       <button
                         onClick={() => downloadPaymentReceiptPDF(receipt)}
@@ -5530,8 +5698,8 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                     <div className="text-xs">
                       <span className="text-slate-400 block font-semibold">Calculated Expected Payout comparison:</span>
                       <div className="flex gap-4 mt-1 font-bold">
-                        <span className="text-slate-500 font-normal">Original: <span className="text-white font-semibold">₹{selectedSlipForEdit.total_payout?.toLocaleString()}</span></span>
-                        <span className="text-emerald-400">Proposed: <span>₹{((parseFloat(editSlipWeight || 0) * parseFloat(editSlipRate || 0)) - parseFloat(editSlipDeductions || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
+                        <span className="text-slate-500 font-normal">Original: <span className="text-white font-semibold">₹{selectedSlipForEdit.total_payout?.toLocaleString('en-IN')}</span></span>
+                        <span className="text-emerald-400">Proposed: <span>₹{((parseFloat(editSlipWeight || 0) * parseFloat(editSlipRate || 0)) - parseFloat(editSlipDeductions || 0)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span></span>
                       </div>
                     </div>
                     <button
@@ -5579,7 +5747,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                             Weight: {slip.quintals.toFixed(2)} Qtl | Bags: {slip.bag_count} | Deductions: {slip.deductions.toFixed(2)} Qtl
                           </span>
                         </td>
-                        <td className="p-3.5 font-bold">₹{slip.total_payout.toLocaleString()}</td>
+                        <td className="p-3.5 font-bold">₹{slip.total_payout.toLocaleString('en-IN')}</td>
                         <td className="p-3.5">
                           <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase border ${slip.edit_status === 'none' ? 'bg-slate-950 text-slate-400 border-slate-800' :
                               slip.edit_status === 'pending_farmer_approval' ? 'bg-amber-950/40 text-amber-400 border-amber-900/50 animate-pulse-slow' :
@@ -5727,7 +5895,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                           <div className="flex gap-4 mt-3 text-xs">
                             <div>
                               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Fuel Cost</span>
-                              <p className="font-semibold text-red-400 mt-0.5">₹{v.fuel_expense.toLocaleString()}</p>
+                              <p className="font-semibold text-red-400 mt-0.5">₹{v.fuel_expense.toLocaleString('en-IN')}</p>
                             </div>
                           </div>
                         </div>
@@ -5875,7 +6043,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                           <span className="font-bold text-slate-300 block">{c.cost_type}</span>
                           <span className="text-[9px] text-slate-500 block">{c.note || 'No note'}</span>
                         </div>
-                        <span className="font-bold text-red-400">₹{c.amount.toLocaleString()}</span>
+                        <span className="font-bold text-red-400">₹{c.amount.toLocaleString('en-IN')}</span>
                       </div>
                     ))
                   )}
@@ -6532,7 +6700,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
 
                             <div className="mt-3 space-y-1.5 text-slate-300">
                               <p><strong className="text-slate-500">Phone:</strong> <span className="font-mono">{s.phone}</span></p>
-                              <p><strong className="text-slate-500">Total Pay Logged:</strong> <span className="font-mono text-emerald-400 font-bold">₹{s.total_payouts.toLocaleString()}</span></p>
+                              <p><strong className="text-slate-500">Total Pay Logged:</strong> <span className="font-mono text-emerald-400 font-bold">₹{s.total_payouts.toLocaleString('en-IN')}</span></p>
                             </div>
                           </div>
 
@@ -6859,7 +7027,7 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                   </div>
                   <div className="flex justify-between border-t border-slate-800 pt-2 text-emerald-400">
                     <span className="font-bold">Total Expected Pay:</span>
-                    <span className="font-display font-extrabold text-base">₹{calculatedPayout.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span className="font-display font-extrabold text-base">₹{calculatedPayout.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
