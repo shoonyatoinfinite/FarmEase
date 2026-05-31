@@ -599,45 +599,68 @@ const downloadPaymentReceiptPDF = (receipt) => {
 
   // Table Values
   doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 132);
+
+  // Rate Info Row
   doc.setFont("helvetica", "normal");
-  doc.text(String(receipt.crop_name || 'Crop Procurement'), 18, 131);
-  doc.setFontSize(7);
-  doc.setTextColor(110, 110, 110);
-  doc.text(`Rate: ₹${Number(receipt.rate_per_quintal || 0).toLocaleString('en-IN')}/Qtl | Deductions: ₹${Number(receipt.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 18, 135);
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Rate:", 18, 138);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 60, 60);
+  doc.text(`INR ${Number(receipt.rate_per_quintal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / Qtl`, 28, 138);
+
+  // Deductions Info Row
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text("Deductions:", 18, 143);
+  doc.setFont("helvetica", "bold");
+  if (Number(receipt.deductions || 0) > 0) {
+    doc.setTextColor(180, 50, 50); // elegant red for deductions
+    doc.text(`-INR ${Number(receipt.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 38, 143);
+  } else {
+    doc.setTextColor(60, 60, 60);
+    doc.text("INR 0.00", 38, 143);
+  }
+
+  // Restore regular text styling for other columns
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
   doc.setTextColor(30, 30, 30);
-  doc.text(`${Number(receipt.quintals || 0).toFixed(2)} Qtl`, 65, 133, { align: "right" });
-  doc.text(formatCurrency(receipt.total_amount), 100, 133, { align: "right" });
+  doc.text(`${Number(receipt.quintals || 0).toFixed(2)} Qtl`, 65, 132, { align: "right" });
+  doc.text(formatCurrency(receipt.total_amount), 100, 132, { align: "right" });
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(22, 122, 80);
-  doc.text(formatCurrency(receipt.amount_paid), 140, 133, { align: "right" });
+  doc.text(formatCurrency(receipt.amount_paid), 140, 132, { align: "right" });
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(30, 30, 30);
-  doc.text(formatCurrency(receipt.total_paid_after), 185, 133, { align: "right" });
+  doc.text(formatCurrency(receipt.total_paid_after), 185, 132, { align: "right" });
 
   // Underline table row
-  doc.setDrawColor(220, 220, 220);
-  doc.line(15, 138, 195, 138);
+  doc.setDrawColor(200, 220, 210);
+  doc.line(15, 147, 195, 147);
 
-  // Breakdown & Outstanding (Y: 145, H: 45)
+  // Breakdown & Outstanding (Y: 154, H: 45)
   // Left side: Mode-wise totals
   if (breakdownRows.length > 0) {
     doc.setFillColor(250, 250, 250);
-    doc.rect(15, 145, 87, 45, 'F');
+    doc.rect(15, 154, 87, 45, 'F');
     doc.setDrawColor(230, 230, 230);
-    doc.rect(15, 145, 87, 45);
+    doc.rect(15, 154, 87, 45);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(80, 80, 80);
-    doc.text("MODE-WISE PAYMENT TOTALS", 20, 152);
+    doc.text("MODE-WISE PAYMENT TOTALS", 20, 161);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
-    let rowY = 160;
+    let rowY = 169;
     breakdownRows.forEach((row) => {
       doc.text(`${String(row.payment_mode || '').toUpperCase()}:`, 20, rowY);
       doc.setFont("helvetica", "bold");
@@ -649,16 +672,16 @@ const downloadPaymentReceiptPDF = (receipt) => {
     });
   } else {
     doc.setFillColor(250, 250, 250);
-    doc.rect(15, 145, 87, 45, 'F');
+    doc.rect(15, 154, 87, 45, 'F');
     doc.setDrawColor(230, 230, 230);
-    doc.rect(15, 145, 87, 45);
+    doc.rect(15, 154, 87, 45);
     doc.setTextColor(100, 100, 100);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("This receipt details the specific ledger update,", 20, 158);
-    doc.text("reflecting payments processed directly for the", 20, 164);
-    doc.text("linked weighing slip. All transactions are logged", 20, 170);
-    doc.text("safely in the FarmEase accounts database.", 20, 176);
+    doc.text("This receipt details the specific ledger update,", 20, 167);
+    doc.text("reflecting payments processed directly for the", 20, 173);
+    doc.text("linked weighing slip. All transactions are logged", 20, 179);
+    doc.text("safely in the FarmEase accounts database.", 20, 185);
   }
 
   // Right side: Remaining Due highlight box
@@ -672,19 +695,19 @@ const downloadPaymentReceiptPDF = (receipt) => {
     doc.setFillColor(254, 242, 242); // Soft red background
     doc.setDrawColor(220, 38, 38); // Border red
   }
-  doc.rect(108, 145, 87, 24, 'F');
-  doc.rect(108, 145, 87, 24);
+  doc.rect(108, 154, 87, 24, 'F');
+  doc.rect(108, 154, 87, 24);
 
   doc.setTextColor(isCleared ? 22 : 180, isCleared ? 122 : 50, isCleared ? 80 : 50);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
-  doc.text("OUTSTANDING LEDGER BALANCE", 113, 151);
+  doc.text("OUTSTANDING LEDGER BALANCE", 113, 160);
 
   doc.setFontSize(13.5);
   if (isCleared) {
-    doc.text("₹0.00 (SETTLED)", 113, 162);
+    doc.text("INR 0.00 (SETTLED)", 113, 171);
   } else {
-    doc.text(formatCurrency(remainingDue), 113, 162);
+    doc.text(formatCurrency(remainingDue), 113, 171);
   }
 
   // Signatures section (Y: 235)
@@ -7324,6 +7347,16 @@ function AdminView({ token, translate, activeTab, setActiveTab, user, onUserUpda
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-medium">Net Quantity:</span>
                   <span className="font-bold text-slate-200">{selectedReceiptForModal.quintals?.toFixed(2)} Quintals</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 font-medium">Rate / Qtl:</span>
+                  <span className="font-bold text-slate-200">INR {Number(selectedReceiptForModal.rate_per_quintal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 font-medium">Deductions:</span>
+                  <span className={`font-bold ${Number(selectedReceiptForModal.deductions || 0) > 0 ? 'text-red-400' : 'text-slate-400'}`}>
+                    {Number(selectedReceiptForModal.deductions || 0) > 0 ? `-INR ${Number(selectedReceiptForModal.deductions).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'INR 0.00'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400 font-medium">Payment Mode:</span>
